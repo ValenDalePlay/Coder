@@ -1,0 +1,71 @@
+/* Estilos personalizados adicionales */
+
+body {
+    font-family: 'Arial', sans-serif;
+}
+
+.logo {
+    width: 40px;
+    height: 40px;
+}
+
+.modal {
+    transition: opacity 0.3s ease-in-out;
+}
+
+.modal-content {
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Estilos para la tabla de inventario */
+.tabla-inventario {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 4px;
+}
+
+.tabla-inventario th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tabla-inventario tr {
+    transition: background-color 0.2s ease-in-out;
+}
+
+.tabla-inventario tr:hover {
+    background-color: #f1f3f5;
+}
+
+/* Estilos para los botones */
+.btn {
+    transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* Estilos para las tarjetas de estadísticas */
+.stat-card {
+    transition: all 0.3s ease-in-out;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+}
