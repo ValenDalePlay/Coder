@@ -88,6 +88,10 @@ class UI {
         this.formVenta = document.getElementById('form-venta');
         this.informeContenido = document.getElementById('informe-contenido');
 
+        if (!this.informeContenido) {
+            console.error('El elemento con ID "informe-contenido" no se encuentra en el DOM');
+        }
+
         this.setupEventListeners();
     }
 
@@ -259,6 +263,11 @@ class UI {
     }
 
     generarInforme() {
+        if (!this.informeContenido) {
+            console.error('El elemento con ID "informe-contenido" no se encuentra en el DOM');
+            return;
+        }
+
         const informe = `
             <h3 class="text-xl font-semibold mb-2">Resumen</h3>
             <p>Total de productos: ${this.inventario.cantidadTotalProductos()}</p>
@@ -292,8 +301,12 @@ class UI {
 
         // Mostrar en la interfaz
         this.informeContenido.innerHTML = informe;
-        this.modalInforme.classList.remove('hidden');
-        this.modalInforme.classList.add('flex');
+        if (this.modalInforme) {
+            this.modalInforme.classList.remove('hidden');
+            this.modalInforme.classList.add('flex');
+        } else {
+            console.error('El elemento modal de informe no se encuentra en el DOM');
+        }
 
         // Mostrar en la consola
         console.log('--- Informe de Inventario ---');
