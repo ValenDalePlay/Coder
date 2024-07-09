@@ -83,8 +83,10 @@ class UI {
         this.btnInforme = document.getElementById('btn-informe');
         this.modalProducto = document.getElementById('modal-producto');
         this.modalVenta = document.getElementById('modal-venta');
+        this.modalInforme = document.getElementById('modal-informe');
         this.formProducto = document.getElementById('form-producto');
         this.formVenta = document.getElementById('form-venta');
+        this.informeContenido = document.getElementById('informe-contenido');
 
         this.setupEventListeners();
     }
@@ -97,6 +99,7 @@ class UI {
         this.formVenta.addEventListener('submit', (e) => this.manejarSubmitVenta(e));
         document.getElementById('cerrar-modal-producto').addEventListener('click', () => this.cerrarModalProducto());
         document.getElementById('cerrar-modal-venta').addEventListener('click', () => this.cerrarModalVenta());
+        document.getElementById('cerrar-modal-informe').addEventListener('click', () => this.cerrarModalInforme());
     }
 
     actualizarUI() {
@@ -104,6 +107,7 @@ class UI {
         this.valorInventario.textContent = `$${this.inventario.valorTotalInventario().toFixed(2)}`;
         this.ventasDia.textContent = `$${this.ventasDelDia.toFixed(2)}`;
         this.actualizarTablaInventario();
+        console.log('UI actualizada');
     }
 
     actualizarTablaInventario() {
@@ -118,7 +122,6 @@ class UI {
                 <td class="py-2 px-4 border-b">$${producto.valorTotal().toFixed(2)}</td>
                 <td class="py-2 px-4 border-b">
                     <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mr-2 editar-producto" data-id="${producto.id}">Editar</button>
-                    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded eliminar-producto" data-id="${producto.id}">
                     <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded eliminar-producto" data-id="${producto.id}">Eliminar</button>
                 </td>
             `;
@@ -132,6 +135,7 @@ class UI {
         document.querySelectorAll('.eliminar-producto').forEach(btn => {
             btn.addEventListener('click', (e) => this.eliminarProducto(parseInt(e.target.dataset.id)));
         });
+        console.log('Tabla de inventario actualizada');
     }
 
     mostrarModalProducto(producto = null) {
@@ -147,10 +151,12 @@ class UI {
             productoNombre.value = producto.nombre;
             productoPrecio.value = producto.precio;
             productoCantidad.value = producto.cantidad;
+            console.log(`Mostrando modal para editar producto: ${producto.nombre}`);
         } else {
             modalTitulo.textContent = 'Agregar Producto';
             this.formProducto.reset();
             productoId.value = '';
+            console.log('Mostrando modal para agregar nuevo producto');
         }
 
         this.modalProducto.classList.remove('hidden');
@@ -160,6 +166,7 @@ class UI {
     cerrarModalProducto() {
         this.modalProducto.classList.remove('flex');
         this.modalProducto.classList.add('hidden');
+        console.log('Modal de producto cerrado');
     }
 
     mostrarModalVenta() {
@@ -174,11 +181,13 @@ class UI {
 
         this.modalVenta.classList.remove('hidden');
         this.modalVenta.classList.add('flex');
+        console.log('Modal de venta abierto');
     }
 
     cerrarModalVenta() {
         this.modalVenta.classList.remove('flex');
         this.modalVenta.classList.add('hidden');
+        console.log('Modal de venta cerrado');
     }
 
     manejarSubmitProducto(e) {
@@ -190,8 +199,10 @@ class UI {
 
         if (id) {
             this.inventario.actualizarProducto(parseInt(id), nombre, precio, cantidad);
+            console.log(`Producto actualizado - ID: ${id}, Nombre: ${nombre}, Precio: $${precio}, Cantidad: ${cantidad}`);
         } else {
-            this.inventario.agregarProducto(nombre, precio, cantidad);
+            const nuevoProducto = this.inventario.agregarProducto(nombre, precio, cantidad);
+            console.log(`Nuevo producto agregado - ID: ${nuevoProducto.id}, Nombre: ${nombre}, Precio: $${precio}, Cantidad: ${cantidad}`);
         }
 
         this.actualizarUI();
@@ -207,9 +218,13 @@ class UI {
         if (ventaTotal > 0) {
             this.ventasDelDia += ventaTotal;
             this.actualizarUI();
-            alert(`Venta realizada por $${ventaTotal.toFixed(2)}`);
+            const mensaje = `Venta realizada por $${ventaTotal.toFixed(2)}`;
+            alert(mensaje);
+            console.log(mensaje);
         } else {
-            alert('No se pudo realizar la venta. Verifique la cantidad disponible.');
+            const mensaje = 'No se pudo realizar la venta. Verifique la cantidad disponible.';
+            alert(mensaje);
+            console.error(mensaje);
         }
 
         this.cerrarModalVenta();
@@ -223,36 +238,78 @@ class UI {
     }
 
     eliminarProducto(id) {
-        if (confirm('¿Está seguro de que desea eliminar este producto?')) {
-            if (this.inventario.eliminarProducto(id)) {
-                this.actualizarUI();
-                alert('Producto eliminado con éxito.');
+        const producto = this.inventario.obtenerProducto(id);
+        if (producto) {
+            const confirmacion = confirm(`¿Está seguro de que desea eliminar el producto "${producto.nombre}"?`);
+            if (confirmacion) {
+                if (this.inventario.eliminarProducto(id)) {
+                    this.actualizarUI();
+                    const mensaje = `Producto "${producto.nombre}" eliminado con éxito.`;
+                    alert(mensaje);
+                    console.log(mensaje);
+                } else {
+                    const mensaje = 'No se pudo eliminar el producto.';
+                    alert(mensaje);
+                    console.error(mensaje);
+                }
             } else {
-                alert('No se pudo eliminar el producto.');
+                console.log(`Eliminación del producto "${producto.nombre}" cancelada por el usuario.`);
             }
         }
     }
 
     generarInforme() {
         const informe = `
-            Informe de Inventario
-            ---------------------
-            Total de productos: ${this.inventario.cantidadTotalProductos()}
-            Valor total del inventario: $${this.inventario.valorTotalInventario().toFixed(2)}
-            Ventas del día: $${this.ventasDelDia.toFixed(2)}
+            <h3 class="text-xl font-semibold mb-2">Resumen</h3>
+            <p>Total de productos: ${this.inventario.cantidadTotalProductos()}</p>
+            <p>Valor total del inventario: $${this.inventario.valorTotalInventario().toFixed(2)}</p>
+            <p>Ventas del día: $${this.ventasDelDia.toFixed(2)}</p>
 
-            Detalles del inventario:
-            ${this.inventario.productos.map(p => `
-                ID: ${p.id}
-                Nombre: ${p.nombre}
-                Precio: $${p.precio.toFixed(2)}
-                Cantidad: ${p.cantidad}
-                Valor total: $${p.valorTotal().toFixed(2)}
-            `).join('\n')}
+            <h3 class="text-xl font-semibold mt-4 mb-2">Detalles del inventario:</h3>
+            <table class="w-full border-collapse border border-gray-300">
+                <thead>
+                    <tr class="bg-gray-100">
+                        <th class="border border-gray-300 p-2">ID</th>
+                        <th class="border border-gray-300 p-2">Nombre</th>
+                        <th class="border border-gray-300 p-2">Precio</th>
+                        <th class="border border-gray-300 p-2">Cantidad</th>
+                        <th class="border border-gray-300 p-2">Valor total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${this.inventario.productos.map(p => `
+                        <tr>
+                            <td class="border border-gray-300 p-2">${p.id}</td>
+                            <td class="border border-gray-300 p-2">${p.nombre}</td>
+                            <td class="border border-gray-300 p-2">$${p.precio.toFixed(2)}</td>
+                            <td class="border border-gray-300 p-2">${p.cantidad}</td>
+                            <td class="border border-gray-300 p-2">$${p.valorTotal().toFixed(2)}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
         `;
 
-        console.log(informe);
-        alert('El informe se ha generado en la consola.');
+        // Mostrar en la interfaz
+        this.informeContenido.innerHTML = informe;
+        this.modalInforme.classList.remove('hidden');
+        this.modalInforme.classList.add('flex');
+
+        // Mostrar en la consola
+        console.log('--- Informe de Inventario ---');
+        console.log(`Total de productos: ${this.inventario.cantidadTotalProductos()}`);
+        console.log(`Valor total del inventario: $${this.inventario.valorTotalInventario().toFixed(2)}`);
+        console.log(`Ventas del día: $${this.ventasDelDia.toFixed(2)}`);
+        console.log('Detalles del inventario:');
+        this.inventario.productos.forEach(p => {
+            console.log(`ID: ${p.id}, Nombre: ${p.nombre}, Precio: $${p.precio.toFixed(2)}, Cantidad: ${p.cantidad}, Valor total: $${p.valorTotal().toFixed(2)}`);
+        });
+    }
+
+    cerrarModalInforme() {
+        this.modalInforme.classList.remove('flex');
+        this.modalInforme.classList.add('hidden');
+        console.log('Modal de informe cerrado');
     }
 }
 
@@ -279,7 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function solicitarConsentimientoCookies() {
         const consentimiento = confirm("Este sitio utiliza cookies para mejorar tu experiencia. ¿Aceptas el uso de cookies?");
         if (consentimiento) {
-            console.log("Consentimiento de cookies aceptado.");
+            onsole.log("Consentimiento de cookies aceptado.");
         } else {
             console.log("Consentimiento de cookies rechazado. Algunas funciones pueden estar limitadas.");
         }
