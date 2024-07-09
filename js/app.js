@@ -115,14 +115,14 @@ class UI {
         this.inventario.productos.forEach(producto => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${producto.id}</td>
-                <td>${producto.nombre}</td>
-                <td>$${producto.precio.toFixed(2)}</td>
-                <td>${producto.cantidad}</td>
-                <td>$${producto.valorTotal().toFixed(2)}</td>
-                <td>
-                    <button class="editar-producto" data-id="${producto.id}">Editar</button>
-                    <button class="eliminar-producto" data-id="${producto.id}">Eliminar</button>
+                <td class="py-2 px-4 border-b">${producto.id}</td>
+                <td class="py-2 px-4 border-b">${producto.nombre}</td>
+                <td class="py-2 px-4 border-b">$${producto.precio.toFixed(2)}</td>
+                <td class="py-2 px-4 border-b">${producto.cantidad}</td>
+                <td class="py-2 px-4 border-b">$${producto.valorTotal().toFixed(2)}</td>
+                <td class="py-2 px-4 border-b">
+                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mr-2 editar-producto" data-id="${producto.id}">Editar</button>
+                    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded eliminar-producto" data-id="${producto.id}">Eliminar</button>
                 </td>
             `;
             this.tablaInventario.appendChild(row);
@@ -159,11 +159,13 @@ class UI {
             console.log('Mostrando modal para agregar nuevo producto');
         }
 
-        this.modalProducto.style.display = 'block';
+        this.modalProducto.classList.remove('hidden');
+        this.modalProducto.classList.add('flex');
     }
 
     cerrarModalProducto() {
-        this.modalProducto.style.display = 'none';
+        this.modalProducto.classList.remove('flex');
+        this.modalProducto.classList.add('hidden');
         console.log('Modal de producto cerrado');
     }
 
@@ -177,12 +179,14 @@ class UI {
             selectProducto.appendChild(option);
         });
 
-        this.modalVenta.style.display = 'block';
+        this.modalVenta.classList.remove('hidden');
+        this.modalVenta.classList.add('flex');
         console.log('Modal de venta abierto');
     }
 
     cerrarModalVenta() {
-        this.modalVenta.style.display = 'none';
+        this.modalVenta.classList.remove('flex');
+        this.modalVenta.classList.add('hidden');
         console.log('Modal de venta cerrado');
     }
 
@@ -256,30 +260,30 @@ class UI {
 
     generarInforme() {
         const informe = `
-            <h3>Resumen</h3>
+            <h3 class="text-xl font-semibold mb-2">Resumen</h3>
             <p>Total de productos: ${this.inventario.cantidadTotalProductos()}</p>
             <p>Valor total del inventario: $${this.inventario.valorTotalInventario().toFixed(2)}</p>
             <p>Ventas del día: $${this.ventasDelDia.toFixed(2)}</p>
 
-            <h3>Detalles del inventario:</h3>
-            <table>
+            <h3 class="text-xl font-semibold mt-4 mb-2">Detalles del inventario:</h3>
+            <table class="w-full border-collapse border border-gray-300">
                 <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Precio</th>
-                        <th>Cantidad</th>
-                        <th>Valor total</th>
+                    <tr class="bg-gray-100">
+                        <th class="border border-gray-300 p-2">ID</th>
+                        <th class="border border-gray-300 p-2">Nombre</th>
+                        <th class="border border-gray-300 p-2">Precio</th>
+                        <th class="border border-gray-300 p-2">Cantidad</th>
+                        <th class="border border-gray-300 p-2">Valor total</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${this.inventario.productos.map(p => `
                         <tr>
-                            <td>${p.id}</td>
-                            <td>${p.nombre}</td>
-                            <td>$${p.precio.toFixed(2)}</td>
-                            <td>${p.cantidad}</td>
-                            <td>$${p.valorTotal().toFixed(2)}</td>
+                            <td class="border border-gray-300 p-2">${p.id}</td>
+                            <td class="border border-gray-300 p-2">${p.nombre}</td>
+                            <td class="border border-gray-300 p-2">$${p.precio.toFixed(2)}</td>
+                            <td class="border border-gray-300 p-2">${p.cantidad}</td>
+                            <td class="border border-gray-300 p-2">$${p.valorTotal().toFixed(2)}</td>
                         </tr>
                     `).join('')}
                 </tbody>
@@ -288,7 +292,8 @@ class UI {
 
         // Mostrar en la interfaz
         this.informeContenido.innerHTML = informe;
-        this.modalInforme.style.display = 'block';
+        this.modalInforme.classList.remove('hidden');
+        this.modalInforme.classList.add('flex');
 
         // Mostrar en la consola
         console.log('--- Informe de Inventario ---');
@@ -302,7 +307,8 @@ class UI {
     }
 
     cerrarModalInforme() {
-        this.modalInforme.style.display = 'none';
+        this.modalInforme.classList.remove('flex');
+        this.modalInforme.classList.add('hidden');
         console.log('Modal de informe cerrado');
     }
 }
@@ -330,11 +336,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function solicitarConsentimientoCookies() {
         const consentimiento = confirm("Este sitio utiliza cookies para mejorar tu experiencia. ¿Aceptas el uso de cookies?");
         if (consentimiento) {
-            console.log("Consentimiento de cookies aceptado.");
-            alert("Gracias por aceptar las cookies. Tu experiencia en el sitio será óptima.");
+            onsole.log("Consentimiento de cookies aceptado.");
         } else {
             console.log("Consentimiento de cookies rechazado. Algunas funciones pueden estar limitadas.");
-            alert("Has rechazado el uso de cookies. Algunas funciones del sitio pueden estar limitadas.");
         }
     }
 
