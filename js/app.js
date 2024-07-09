@@ -336,9 +336,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function solicitarConsentimientoCookies() {
         const consentimiento = confirm("Este sitio utiliza cookies para mejorar tu experiencia. ¿Aceptas el uso de cookies?");
         if (consentimiento) {
-            onsole.log("Consentimiento de cookies aceptado.");
+            console.log("Consentimiento de cookies aceptado.");
+            alert("Gracias por aceptar las cookies. Tu experiencia en el sitio será óptima.");
         } else {
             console.log("Consentimiento de cookies rechazado. Algunas funciones pueden estar limitadas.");
+            alert("Has rechazado el uso de cookies. Algunas funciones del sitio pueden estar limitadas.");
         }
     }
 
