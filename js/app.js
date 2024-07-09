@@ -115,14 +115,14 @@ class UI {
         this.inventario.productos.forEach(producto => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td class="py-2 px-4 border-b">${producto.id}</td>
-                <td class="py-2 px-4 border-b">${producto.nombre}</td>
-                <td class="py-2 px-4 border-b">$${producto.precio.toFixed(2)}</td>
-                <td class="py-2 px-4 border-b">${producto.cantidad}</td>
-                <td class="py-2 px-4 border-b">$${producto.valorTotal().toFixed(2)}</td>
-                <td class="py-2 px-4 border-b">
-                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mr-2 editar-producto" data-id="${producto.id}">Editar</button>
-                    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded eliminar-producto" data-id="${producto.id}">Eliminar</button>
+                <td>${producto.id}</td>
+                <td>${producto.nombre}</td>
+                <td>$${producto.precio.toFixed(2)}</td>
+                <td>${producto.cantidad}</td>
+                <td>$${producto.valorTotal().toFixed(2)}</td>
+                <td>
+                    <button class="editar-producto" data-id="${producto.id}">Editar</button>
+                    <button class="eliminar-producto" data-id="${producto.id}">Eliminar</button>
                 </td>
             `;
             this.tablaInventario.appendChild(row);
@@ -159,13 +159,11 @@ class UI {
             console.log('Mostrando modal para agregar nuevo producto');
         }
 
-        this.modalProducto.classList.remove('hidden');
-        this.modalProducto.classList.add('flex');
+        this.modalProducto.style.display = 'block';
     }
 
     cerrarModalProducto() {
-        this.modalProducto.classList.remove('flex');
-        this.modalProducto.classList.add('hidden');
+        this.modalProducto.style.display = 'none';
         console.log('Modal de producto cerrado');
     }
 
@@ -179,14 +177,12 @@ class UI {
             selectProducto.appendChild(option);
         });
 
-        this.modalVenta.classList.remove('hidden');
-        this.modalVenta.classList.add('flex');
+        this.modalVenta.style.display = 'block';
         console.log('Modal de venta abierto');
     }
 
     cerrarModalVenta() {
-        this.modalVenta.classList.remove('flex');
-        this.modalVenta.classList.add('hidden');
+        this.modalVenta.style.display = 'none';
         console.log('Modal de venta cerrado');
     }
 
@@ -260,30 +256,30 @@ class UI {
 
     generarInforme() {
         const informe = `
-            <h3 class="text-xl font-semibold mb-2">Resumen</h3>
+            <h3>Resumen</h3>
             <p>Total de productos: ${this.inventario.cantidadTotalProductos()}</p>
             <p>Valor total del inventario: $${this.inventario.valorTotalInventario().toFixed(2)}</p>
             <p>Ventas del día: $${this.ventasDelDia.toFixed(2)}</p>
 
-            <h3 class="text-xl font-semibold mt-4 mb-2">Detalles del inventario:</h3>
-            <table class="w-full border-collapse border border-gray-300">
+            <h3>Detalles del inventario:</h3>
+            <table>
                 <thead>
-                    <tr class="bg-gray-100">
-                        <th class="border border-gray-300 p-2">ID</th>
-                        <th class="border border-gray-300 p-2">Nombre</th>
-                        <th class="border border-gray-300 p-2">Precio</th>
-                        <th class="border border-gray-300 p-2">Cantidad</th>
-                        <th class="border border-gray-300 p-2">Valor total</th>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Precio</th>
+                        <th>Cantidad</th>
+                        <th>Valor total</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${this.inventario.productos.map(p => `
                         <tr>
-                            <td class="border border-gray-300 p-2">${p.id}</td>
-                            <td class="border border-gray-300 p-2">${p.nombre}</td>
-                            <td class="border border-gray-300 p-2">$${p.precio.toFixed(2)}</td>
-                            <td class="border border-gray-300 p-2">${p.cantidad}</td>
-                            <td class="border border-gray-300 p-2">$${p.valorTotal().toFixed(2)}</td>
+                            <td>${p.id}</td>
+                            <td>${p.nombre}</td>
+                            <td>$${p.precio.toFixed(2)}</td>
+                            <td>${p.cantidad}</td>
+                            <td>$${p.valorTotal().toFixed(2)}</td>
                         </tr>
                     `).join('')}
                 </tbody>
@@ -292,8 +288,7 @@ class UI {
 
         // Mostrar en la interfaz
         this.informeContenido.innerHTML = informe;
-        this.modalInforme.classList.remove('hidden');
-        this.modalInforme.classList.add('flex');
+        this.modalInforme.style.display = 'block';
 
         // Mostrar en la consola
         console.log('--- Informe de Inventario ---');
@@ -307,8 +302,7 @@ class UI {
     }
 
     cerrarModalInforme() {
-        this.modalInforme.classList.remove('flex');
-        this.modalInforme.classList.add('hidden');
+        this.modalInforme.style.display = 'none';
         console.log('Modal de informe cerrado');
     }
 }
