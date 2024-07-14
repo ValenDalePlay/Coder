@@ -31,15 +31,15 @@ class InventoryUI {
         this.inventario.productos.forEach(producto => {
             const row = tabla.insertRow();
             row.innerHTML = `
-                <td class="py-2 px-4 border-b">${producto.id}</td>
-                <td class="py-2 px-4 border-b">${producto.nombre}</td>
-                <td class="py-2 px-4 border-b">Electrónicos</td>
-                <td class="py-2 px-4 border-b">$${producto.precio.toFixed(2)}</td>
-                <td class="py-2 px-4 border-b">${producto.cantidad}</td>
-                <td class="py-2 px-4 border-b">$${producto.valorTotal().toFixed(2)}</td>
-                <td class="py-2 px-4 border-b">
-                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mr-2 editar-producto" data-id="${producto.id}">Editar</button>
-                    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded eliminar-producto" data-id="${producto.id}">Eliminar</button>
+                <td>${producto.id}</td>
+                <td>${producto.nombre}</td>
+                <td>Electrónicos</td>
+                <td>$${producto.precio.toFixed(2)}</td>
+                <td>${producto.cantidad}</td>
+                <td>$${producto.valorTotal().toFixed(2)}</td>
+                <td>
+                    <button class="btn btn-primary btn-sm editar-producto" data-id="${producto.id}">Editar</button>
+                    <button class="btn btn-danger btn-sm eliminar-producto" data-id="${producto.id}">Eliminar</button>
                 </td>
             `;
         });
@@ -73,11 +73,9 @@ class InventoryUI {
         }
 
         document.getElementById('modal-product').classList.remove('hidden');
-        document.getElementById('modal-product').classList.add('flex');
     }
 
     cerrarModalProducto() {
-        document.getElementById('modal-product').classList.remove('flex');
         document.getElementById('modal-product').classList.add('hidden');
     }
 
@@ -136,15 +134,15 @@ class InventoryUI {
         productos.forEach(producto => {
             const row = tabla.insertRow();
             row.innerHTML = `
-                <td class="py-2 px-4 border-b">${producto.id}</td>
-                <td class="py-2 px-4 border-b">${producto.nombre}</td>
-                <td class="py-2 px-4 border-b">Electrónicos</td>
-                <td class="py-2 px-4 border-b">$${producto.precio.toFixed(2)}</td>
-                <td class="py-2 px-4 border-b">${producto.cantidad}</td>
-                <td class="py-2 px-4 border-b">$${producto.valorTotal().toFixed(2)}</td>
-                <td class="py-2 px-4 border-b">
-                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mr-2 editar-producto" data-id="${producto.id}">Editar</button>
-                    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded eliminar-producto" data-id="${producto.id}">Eliminar</button>
+                <td>${producto.id}</td>
+                <td>${producto.nombre}</td>
+                <td>Electrónicos</td>
+                <td>$${producto.precio.toFixed(2)}</td>
+                <td>${producto.cantidad}</td>
+                <td>$${producto.valorTotal().toFixed(2)}</td>
+                <td>
+                    <button class="btn btn-primary btn-sm editar-producto" data-id="${producto.id}">Editar</button>
+                    <button class="btn btn-danger btn-sm eliminar-producto" data-id="${producto.id}">Eliminar</button>
                 </td>
             `;
         });
