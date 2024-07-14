@@ -1,0 +1,45 @@
+/* inventory.css */
+#inventory-actions {
+    margin-bottom: 2rem;
+}
+
+#search-product, #filter-category {
+    padding: 0.5rem;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.25rem;
+}
+
+#inventory-table {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+#inventory-list th {
+    background-color: #f7fafc;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+}
+
+#inventory-list td, #inventory-list th {
+    padding: 1rem;
+    text-align: left;
+}
+
+#inventory-list tr:nth-child(even) {
+    background-color: #f7fafc;
+}
+
+.editar-producto, .eliminar-producto {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+}
+
+#modal-product {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+#modal-product .bg-white {
+    border-radius: 0.5rem;
+}

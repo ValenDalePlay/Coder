@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechStore - Informes y Estadísticas</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="../css/styles.css" rel="stylesheet">
+    <link href="../css/reports.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100">
+    <header class="bg-blue-600 text-white shadow-md">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <div class="flex items-center">
+                <img src="../assets/logo.svg" alt="TechStore Logo" class="h-8 w-auto mr-3">
+                <span class="font-bold text-xl">TechStore</span>
+            </div>
+            <nav>
+                <a href="../index.html" class="hover:text-blue-200 mx-3">Inicio</a>
+                <a href="inventory.html" class="hover:text-blue-200 mx-3">Inventario</a>
+                <a href="#" class="hover:text-blue-200 mx-3">Informes</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Informes y Estadísticas</h1>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Gráfico de Ventas Diarias -->
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <h2 class="text-xl font-semibold mb-4">Ventas Diarias (Últimos 7 días)</h2>
+                <canvas id="dailySalesChart"></canvas>
+            </div>
+
+            <!-- Gráfico de Productos Más Vendidos -->
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <h2 class="text-xl font-semibold mb-4">Top 5 Productos Más Vendidos</h2>
+                <canvas id="topProductsChart"></canvas>
+            </div>
+
+            <!-- Gráfico de Distribución de Inventario -->
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <h2 class="text-xl font-semibold mb-4">Distribución del Inventario por Categoría</h2>
+                <canvas id="inventoryDistributionChart"></canvas>
+            </div>
+
+            <!-- Gráfico de Tendencia de Ventas -->
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <h2 class="text-xl font-semibold mb-4">Tendencia de Ventas (Últimos 30 días)</h2>
+                <canvas id="salesTrendChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Resumen de Estadísticas -->
+        <div class="mt-8 bg-white p-6 rounded-lg shadow-lg">
+            <h2 class="text-2xl font-semibold mb-4">Resumen de Estadísticas</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="stat-card bg-blue-100 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold text-blue-800">Ventas Totales (Mes)</h3>
+                    <p id="totalMonthlySales" class="text-3xl font-bold text-blue-600">$0</p>
+                </div>
+                <div class="stat-card bg-green-100 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold text-green-800">Productos en Stock</h3>
+                    <p id="totalProductsInStock" class="text-3xl font-bold text-green-600">0</p>
+                </div>
+                <div class="stat-card bg-yellow-100 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold text-yellow-800">Valor del Inventario</h3>
+                    <p id="totalInventoryValue" class="text-3xl font-bold text-yellow-600">$0</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-200 py-4 mt-8">
+        <div class="container mx-auto px-6 text-center text-gray-600">
+            © 2024 TechStore - Sistema de Gestión de Inventario. Todos los derechos reservados.
+        </div>
+    </footer>
+
+    <script src="../js/reports.js"></script>
+</body>
+</html>
