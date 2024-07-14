@@ -1,6 +1,0 @@
-{
-    "routes": [
-      { "src": "/inventory", "dest": "/pages/inventory.html" },
-      { "src": "/reports", "dest": "/pages/reports.html" }
-    ]
-  }
