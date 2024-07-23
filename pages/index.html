@@ -21,10 +21,8 @@
             </nav>
         </div>
     </header>
-
     <main class="container mx-auto px-6 py-8">
         <h1 class="text-3xl font-bold text-gray-800 mb-6">Sistema de Gestión de Inventario</h1>
-        
         <section id="dashboard" class="mb-8">
             <h2 class="text-2xl font-semibold text-gray-700 mb-4">Panel de Control</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -42,7 +40,6 @@
                 </div>
             </div>
         </section>
-
         <section id="acciones" class="mb-8">
             <h2 class="text-2xl font-semibold text-gray-700 mb-4">Acciones</h2>
             <div class="flex space-x-4">
@@ -57,7 +54,6 @@
                 </button>
             </div>
         </section>
-
         <section id="inventario">
             <h2 class="text-2xl font-semibold text-gray-700 mb-4">Inventario Actual</h2>
             <div class="overflow-x-auto">
@@ -66,6 +62,7 @@
                         <tr>
                             <th class="py-2 px-4 border-b">ID</th>
                             <th class="py-2 px-4 border-b">Nombre</th>
+                            <th class="py-2 px-4 border-b">Categoría</th>
                             <th class="py-2 px-4 border-b">Precio</th>
                             <th class="py-2 px-4 border-b">Cantidad</th>
                             <th class="py-2 px-4 border-b">Valor Total</th>
@@ -78,22 +75,83 @@
             </div>
         </section>
     </main>
-
     <footer class="bg-gray-800 text-white py-4">
         <div class="container mx-auto px-6 text-center">
             © 2024 TechStore - Sistema de Gestión de Inventario. Todos los derechos reservados.
         </div>
     </footer>
-
     <div id="modal-producto" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full">
+            <h2 id="modal-titulo" class="text-2xl font-bold mb-4">Agregar Producto</h2>
+            <form id="form-producto">
+                <input type="hidden" id="producto-id">
+                <div class="mb-4">
+                    <label for="producto-nombre" class="block text-gray-700 text-sm font-bold mb-2">Nombre:</label>
+                    <input type="text" id="producto-nombre" name="nombre" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                </div>
+                <div class="mb-4">
+                    <label for="producto-categoria" class="block text-gray-700 text-sm font-bold mb-2">Categoría:</label>
+                    <select id="producto-categoria" name="categoria" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                        <option value="">Seleccione una categoría</option>
+                        <option value="electronica">Electrónica</option>
+                        <option value="hogar">Hogar</option>
+                        <option value="moda">Moda</option>
+                        <option value="deportes">Deportes</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label for="producto-precio" class="block text-gray-700 text-sm font-bold mb-2">Precio:</label>
+                    <input type="number" id="producto-precio" name="precio" step="0.01" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                </div>
+                <div class="mb-6">
+                    <label for="producto-cantidad" class="block text-gray-700 text-sm font-bold mb-2">Cantidad:</label>
+                    <input type="number" id="producto-cantidad" name="cantidad" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                </div>
+                <div class="flex items-center justify-between">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        Guardar
+                    </button>
+                    <button type="button" id="cerrar-modal-producto" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-
     <div id="modal-venta" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full">
+            <h2 class="text-2xl font-bold mb-4">Realizar Venta</h2>
+            <form id="form-venta">
+                <div class="mb-4">
+                    <label for="venta-producto" class="block text-gray-700 text-sm font-bold mb-2">Producto:</label>
+                    <select id="venta-producto" name="producto" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                    </select>
+                </div>
+                <div class="mb-6">
+                    <label for="venta-cantidad" class="block text-gray-700 text-sm font-bold mb-2">Cantidad:</label>
+                    <input type="number" id="venta-cantidad" name="cantidad" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                </div>
+                <div class="flex items-center justify-between">
+                    <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        Realizar Venta
+                    </button>
+                    <button type="button" id="cerrar-modal-venta" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-
     <div id="modal-informe" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white rounded-lg p-8 max-w-4xl w-full">
+            <h2 class="text-2xl font-bold mb-4">Informe de Inventario</h2>
+            <div id="informe-contenido" class="mb-4 overflow-auto max-h-96">
+            </div>
+            <button id="cerrar-modal-informe" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                Cerrar
+            </button>
+        </div>
     </div>
-
     <script src="js/app.js"></script>
 </body>
 </html>
