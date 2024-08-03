@@ -5,43 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TechStore - Informes</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="css/styles.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <link href="../css/styles.css" rel="stylesheet">
+    <link rel="icon" href="../assets/favicon.ico" type="image/x-icon">
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 flex flex-col min-h-screen">
     <header class="bg-blue-600 text-white shadow-md">
-        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
             <div class="flex items-center">
-                <img src="assets/logo.svg" alt="TechStore Logo" class="h-8 w-auto mr-3">
-                <span class="font-bold text-xl">TechStore</span>
+                <img src="../assets/logo.svg" alt="TechStore Logo" class="h-10 w-auto mr-3">
+                <span class="font-bold text-2xl">TechStore</span>
             </div>
-            <nav>
-                <a href="index.html" class="hover:text-blue-200 mx-3">Inicio</a>
-                <a href="inventory.html" class="hover:text-blue-200 mx-3">Inventario</a>
-                <a href="reports.html" class="hover:text-blue-200 mx-3">Informes</a>
+            <nav class="hidden md:flex space-x-4">
+                <a href="../index.html" class="hover:text-blue-200 transition duration-300">Inicio</a>
+                <a href="inventory.html" class="hover:text-blue-200 transition duration-300">Inventario</a>
+                <a href="reports.html" class="hover:text-blue-200 transition duration-300">Informes</a>
             </nav>
+            <button class="md:hidden focus:outline-none">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
         </div>
     </header>
-    <main class="container mx-auto px-6 py-8">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">Generación de Informes</h1>
-        <section id="informes">
-            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Informes Disponibles</h2>
-            <div class="overflow-x-auto">
-                <table class="min-w-full bg-white">
-                    <thead class="bg-gray-100">
+
+    <main class="flex-grow container mx-auto px-6 py-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-8 text-center">Generación de Informes</h1>
+
+        <section id="dashboard" class="mb-12">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-6">Resumen de Informes</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white rounded-lg shadow-md p-6 transition duration-300 hover:shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-700">Informes Generados</h3>
+                        <i class="fas fa-file-alt text-3xl text-blue-500"></i>
+                    </div>
+                    <p id="total-informes" class="text-3xl font-bold mt-4">0</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6 transition duration-300 hover:shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-700">Último Informe</h3>
+                        <i class="fas fa-calendar-alt text-3xl text-green-500"></i>
+                    </div>
+                    <p id="ultimo-informe" class="text-xl font-bold mt-4">N/A</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6 transition duration-300 hover:shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-700">Tipo Más Común</h3>
+                        <i class="fas fa-chart-pie text-3xl text-purple-500"></i>
+                    </div>
+                    <p id="tipo-comun" class="text-xl font-bold mt-4">N/A</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="informes" class="mb-12">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-6">Informes Disponibles</h2>
+            <div class="bg-white shadow-md rounded-lg overflow-hidden">
+                <table class="min-w-full">
+                    <thead class="bg-gray-200">
                         <tr>
-                            <th class="py-2 px-4 border-b">ID</th>
-                            <th class="py-2 px-4 border-b">Tipo de Informe</th>
-                            <th class="py-2 px-4 border-b">Fecha de Generación</th>
-                            <th class="py-2 px-4 border-b">Acciones</th>
+                            <th class="py-3 px-4 text-left">ID</th>
+                            <th class="py-3 px-4 text-left">Tipo de Informe</th>
+                            <th class="py-3 px-4 text-left">Fecha de Generación</th>
+                            <th class="py-3 px-4 text-left">Acciones</th>
                         </tr>
                     </thead>
                     <tbody id="tabla-informes">
+                        <!-- Los informes se insertarán aquí dinámicamente -->
                     </tbody>
                 </table>
             </div>
+            <div class="mt-4 flex justify-end">
+                <button id="btn-cargar-mas" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
+                    Cargar Más
+                </button>
+            </div>
         </section>
-        <section class="mt-8">
-            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Generar Nuevo Informe</h2>
+
+        <section id="generar-informe" class="bg-white rounded-lg shadow-md p-8 mb-12">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-6">Generar Nuevo Informe</h2>
             <form id="form-informe">
                 <div class="mb-4">
                     <label for="tipo-informe" class="block text-gray-700 text-sm font-bold mb-2">Tipo de Informe:</label>
@@ -50,6 +91,8 @@
                         <option value="ventas">Ventas</option>
                         <option value="inventario">Inventario</option>
                         <option value="ingresos">Ingresos</option>
+                        <option value="ganancias">Ganancias</option>
+                        <option value="productos">Productos Populares</option>
                     </select>
                 </div>
                 <div class="mb-4">
@@ -60,22 +103,75 @@
                     <label for="fecha-fin" class="block text-gray-700 text-sm font-bold mb-2">Fecha de Fin:</label>
                     <input type="date" id="fecha-fin" name="fecha_fin" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
                 </div>
+                <div class="mb-4">
+                    <label for="formato-informe" class="block text-gray-700 text-sm font-bold mb-2">Formato del Informe:</label>
+                    <select id="formato-informe" name="formato" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                        <option value="pdf">PDF</option>
+                        <option value="excel">Excel</option>
+                        <option value="csv">CSV</option>
+                    </select>
+                </div>
                 <div class="flex items-center justify-between">
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
                         Generar Informe
                     </button>
-                    <button type="button" id="btn-cancelar-informe" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    <button type="button" id="btn-cancelar-informe" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
                         Cancelar
                     </button>
                 </div>
             </form>
         </section>
+
+        <section id="visualizacion-datos" class="bg-white rounded-lg shadow-md p-8">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-6">Visualización de Datos</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Ventas por Categoría</h3>
+                    <canvas id="grafico-ventas-categoria"></canvas>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-700 mb-4">Tendencia de Ingresos</h3>
+                    <canvas id="grafico-tendencia-ingresos"></canvas>
+                </div>
+            </div>
+        </section>
     </main>
-    <footer class="bg-gray-800 text-white py-4">
-        <div class="container mx-auto px-6 text-center">
-            © 2024 TechStore - Sistema de Gestión de Inventario. Todos los derechos reservados.
+
+    <footer class="bg-gray-800 text-white py-6 mt-12">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-wrap justify-between items-center">
+                <div class="w-full md:w-1/3 text-center md:text-left mb-6 md:mb-0">
+                    <h3 class="text-lg font-semibold mb-2">TechStore</h3>
+                    <p class="text-sm">Sistema de Gestión de Inventario</p>
+                </div>
+                <div class="w-full md:w-1/3 text-center mb-6 md:mb-0">
+                    <p class="text-sm">&copy; 2024 TechStore. Todos los derechos reservados.</p>
+                </div>
+                <div class="w-full md:w-1/3 text-center md:text-right">
+                    <a href="#" class="text-white hover:text-blue-300 mx-2"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="text-white hover:text-blue-300 mx-2"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-white hover:text-blue-300 mx-2"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
         </div>
     </footer>
-    <script src="js/reports.js"></script>
+
+    <!-- Modal para visualizar informe -->
+    <div id="modal-informe" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white rounded-lg p-8 max-w-2xl w-full">
+            <h2 id="modal-informe-titulo" class="text-2xl font-bold mb-4">Detalles del Informe</h2>
+            <div id="modal-informe-contenido" class="mb-6">
+                <!-- El contenido del informe se insertará aquí dinámicamente -->
+            </div>
+            <div class="flex justify-end">
+                <button id="btn-cerrar-modal-informe" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../js/reports.js"></script>
 </body>
 </html>

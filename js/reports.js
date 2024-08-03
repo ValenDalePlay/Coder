@@ -2,13 +2,22 @@ class ReportManager {
     constructor() {
         this.products = JSON.parse(localStorage.getItem('products')) || [];
         this.invoices = JSON.parse(localStorage.getItem('invoices')) || [];
-        this.displayReports();
         this.setupEventListeners();
+        this.displayReports();
     }
 
     setupEventListeners() {
         document.getElementById('generate-report-btn').addEventListener('click', () => this.generateReport());
         document.getElementById('download-report-btn').addEventListener('click', () => this.downloadReport());
+        document.getElementById('export-csv-btn').addEventListener('click', () => this.exportToCSV());
+        document.getElementById('refresh-data-btn').addEventListener('click', () => this.refreshData());
+    }
+
+    refreshData() {
+        this.products = JSON.parse(localStorage.getItem('products')) || [];
+        this.invoices = JSON.parse(localStorage.getItem('invoices')) || [];
+        this.displayReports();
+        alert('Datos actualizados correctamente.');
     }
 
     generateInventoryReport() {
@@ -118,7 +127,8 @@ class ReportManager {
 
     createInventoryChart(report) {
         const ctx = document.getElementById('inventory-chart').getContext('2d');
-        new Chart(ctx, {
+        if (window.inventoryChart) window.inventoryChart.destroy();
+        window.inventoryChart = new Chart(ctx, {
             type: 'pie',
             data: {
                 labels: Object.keys(report.categoryCounts),
@@ -148,7 +158,8 @@ class ReportManager {
         const dates = Object.keys(report.salesByDate).sort((a, b) => new Date(a) - new Date(b));
         const sales = dates.map(date => report.salesByDate[date]);
 
-        new Chart(ctx, {
+        if (window.salesChart) window.salesChart.destroy();
+        window.salesChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: dates,
@@ -183,13 +194,11 @@ class ReportManager {
         const endDate = document.getElementById('end-date').value;
         const reportType = document.getElementById('report-type').value;
 
-        // Filtrar datos basados en el rango de fechas
         const filteredInvoices = this.invoices.filter(invoice => {
             const invoiceDate = new Date(invoice.date);
             return invoiceDate >= new Date(startDate) && invoiceDate <= new Date(endDate);
         });
 
-        // Generar reporte basado en el tipo seleccionado
         let reportContent = '';
         switch (reportType) {
             case 'sales':
@@ -324,9 +333,133 @@ class ReportManager {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     }
+
+    exportToCSV() {
+        const reportType = document.getElementById('report-type').value;
+        let data;
+        let filename;
+
+        switch (reportType) {
+            case 'sales':
+                data = this.prepareCSVData(this.invoices, ['id', 'productName', 'quantity', 'totalPrice', 'date']);
+                filename = 'reporte_ventas.csv';
+                break;
+            case 'inventory':
+                data = this.prepareCSVData(this.products, ['id', 'name', 'category', 'price', 'quantity']);
+                filename = 'reporte_inventario.csv';
+                break;
+            default:
+                alert('Seleccione un tipo de informe válido para exportar a CSV.');
+                return;
+        }
+
+        const csvContent = "data:text/csv;charset=utf-8," + data;
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    prepareCSVData(dataArray, headers) {
+        const csvRows = [];
+        csvRows.push(headers.join(','));
+
+        for (const item of dataArray) {
+            const values = headers.map(header => {
+                const value = item[header];
+                return typeof value === 'string' ? `"${value}"` : value;
+            });
+            csvRows.push(values.join(','));
+        }
+
+        return csvRows.join('\n');
+    }
+
+    printReport() {
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write('<html><head><title>Reporte</title>');
+        printWindow.document.write('<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">');
+        printWindow.document.write('</head><body>');
+        printWindow.document.write(document.getElementById('report-content').innerHTML);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.print();
+    }
+
+    getTopSellingProducts(limit = 5) {
+        const productSales = {};
+        this.invoices.forEach(invoice => {
+            productSales[invoice.productName] = (productSales[invoice.productName] || 0) + invoice.quantity;
+        });
+
+        return Object.entries(productSales)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, limit);
+    }
+
+    getLowStockProducts(threshold = 10) {
+        return this.products.filter(product => product.quantity <= threshold);
+    }
+
+    calculateRevenueGrowth() {
+        const salesByMonth = {};
+        this.invoices.forEach(invoice => {
+            const month = new Date(invoice.date).toLocaleString('default', { month: 'long', year: 'numeric' });
+            salesByMonth[month] = (salesByMonth[month] || 0) + invoice.totalPrice;
+        });
+
+        const sortedMonths = Object.keys(salesByMonth).sort((a, b) => new Date(a) - new Date(b));
+        const growth = [];
+
+        for (let i = 1; i < sortedMonths.length; i++) {
+            const previousMonth = sortedMonths[i - 1];
+            const currentMonth = sortedMonths[i];
+            const growthRate = ((salesByMonth[currentMonth] - salesByMonth[previousMonth]) / salesByMonth[previousMonth]) * 100;
+            growth.push({
+                month: currentMonth,
+                growthRate: growthRate.toFixed(2)
+            });
+        }
+
+        return growth;
+    }
+
+    generatePerformanceReport() {
+        const topSellingProducts = this.getTopSellingProducts();
+        const lowStockProducts = this.getLowStockProducts();
+        const revenueGrowth = this.calculateRevenueGrowth();
+
+        const reportContent = `
+            <h2 class="text-2xl font-bold mb-4">Informe de Rendimiento</h2>
+            
+            <h3 class="text-xl font-semibold mt-4 mb-2">Top 5 Productos Más Vendidos:</h3>
+            <ul>
+                ${topSellingProducts.map(([product, quantity]) => `<li>${product}: ${quantity} unidades</li>`).join('')}
+            </ul>
+
+            <h3 class="text-xl font-semibold mt-4 mb-2">Productos con Stock Bajo:</h3>
+            <ul>
+                ${lowStockProducts.map(product => `<li>${product.name}: ${product.quantity} unidades</li>`).join('')}
+            </ul>
+
+            <h3 class="text-xl font-semibold mt-4 mb-2">Crecimiento de Ingresos:</h3>
+            <ul>
+                ${revenueGrowth.map(growth => `<li>${growth.month}: ${growth.growthRate}%</li>`).join('')}
+            </ul>
+        `;
+
+        document.getElementById('report-content').innerHTML = reportContent;
+    }
 }
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', () => {
     const reportManager = new ReportManager();
+
+    // Eventos adicionales
+    document.getElementById('print-report-btn').addEventListener('click', () => reportManager.printReport());
+    document.getElementById('performance-report-btn').addEventListener('click', () => reportManager.generatePerformanceReport());
 });

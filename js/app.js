@@ -1,10 +1,11 @@
 // Clase Producto
 class Producto {
-    constructor(id, nombre, precio, cantidad) {
+    constructor(id, nombre, precio, cantidad, categoria) {
         this.id = id;
         this.nombre = nombre;
         this.precio = precio;
         this.cantidad = cantidad;
+        this.categoria = categoria;
     }
 
     valorTotal() {
@@ -15,13 +16,18 @@ class Producto {
 // Clase Inventario
 class Inventario {
     constructor() {
-        this.productos = [];
-        this.nextId = 1;
+        this.productos = JSON.parse(localStorage.getItem('productos')) || [];
+        this.nextId = this.calcularNextId();
     }
 
-    agregarProducto(nombre, precio, cantidad) {
-        const producto = new Producto(this.nextId++, nombre, precio, cantidad);
+    calcularNextId() {
+        return this.productos.length > 0 ? Math.max(...this.productos.map(p => p.id)) + 1 : 1;
+    }
+
+    agregarProducto(nombre, precio, cantidad, categoria) {
+        const producto = new Producto(this.nextId++, nombre, precio, cantidad, categoria);
         this.productos.push(producto);
+        this.guardarEnLocalStorage();
         return producto;
     }
 
@@ -29,12 +35,14 @@ class Inventario {
         return this.productos.find(p => p.id === id);
     }
 
-    actualizarProducto(id, nombre, precio, cantidad) {
+    actualizarProducto(id, nombre, precio, cantidad, categoria) {
         const producto = this.obtenerProducto(id);
         if (producto) {
             producto.nombre = nombre;
             producto.precio = precio;
             producto.cantidad = cantidad;
+            producto.categoria = categoria;
+            this.guardarEnLocalStorage();
             return true;
         }
         return false;
@@ -44,6 +52,7 @@ class Inventario {
         const index = this.productos.findIndex(p => p.id === id);
         if (index !== -1) {
             this.productos.splice(index, 1);
+            this.guardarEnLocalStorage();
             return true;
         }
         return false;
@@ -53,6 +62,7 @@ class Inventario {
         const producto = this.obtenerProducto(id);
         if (producto && producto.cantidad >= cantidad) {
             producto.cantidad -= cantidad;
+            this.guardarEnLocalStorage();
             return producto.precio * cantidad;
         }
         return 0;
@@ -65,18 +75,32 @@ class Inventario {
     cantidadTotalProductos() {
         return this.productos.length;
     }
+
+    productosConBajoStock(umbral = 5) {
+        return this.productos.filter(p => p.cantidad <= umbral).length;
+    }
+
+    categoriasUnicas() {
+        return new Set(this.productos.map(p => p.categoria)).size;
+    }
+
+    guardarEnLocalStorage() {
+        localStorage.setItem('productos', JSON.stringify(this.productos));
+    }
 }
 
 // Clase UI para manejar la interfaz de usuario
 class UI {
     constructor(inventario) {
         this.inventario = inventario;
-        this.ventasDelDia = 0;
+        this.ventasDelDia = parseFloat(localStorage.getItem('ventasDelDia')) || 0;
 
         // Elementos del DOM
         this.totalProductos = document.getElementById('total-productos');
         this.valorInventario = document.getElementById('valor-inventario');
         this.ventasDia = document.getElementById('ventas-dia');
+        this.productosBajos = document.getElementById('productos-bajos');
+        this.totalCategorias = document.getElementById('total-categorias');
         this.tablaInventario = document.getElementById('tabla-inventario');
         this.btnAgregar = document.getElementById('btn-agregar');
         this.btnVender = document.getElementById('btn-vender');
@@ -87,10 +111,8 @@ class UI {
         this.formProducto = document.getElementById('form-producto');
         this.formVenta = document.getElementById('form-venta');
         this.informeContenido = document.getElementById('informe-contenido');
-
-        if (!this.informeContenido) {
-            console.error('El elemento con ID "informe-contenido" no se encuentra en el DOM');
-        }
+        this.buscarProducto = document.getElementById('buscar-producto');
+        this.filtrarCategoria = document.getElementById('filtrar-categoria');
 
         this.setupEventListeners();
     }
@@ -104,14 +126,18 @@ class UI {
         document.getElementById('cerrar-modal-producto').addEventListener('click', () => this.cerrarModalProducto());
         document.getElementById('cerrar-modal-venta').addEventListener('click', () => this.cerrarModalVenta());
         document.getElementById('cerrar-modal-informe').addEventListener('click', () => this.cerrarModalInforme());
+        this.buscarProducto.addEventListener('input', () => this.filtrarProductos());
+        this.filtrarCategoria.addEventListener('change', () => this.filtrarProductos());
     }
 
     actualizarUI() {
         this.totalProductos.textContent = this.inventario.cantidadTotalProductos();
         this.valorInventario.textContent = `$${this.inventario.valorTotalInventario().toFixed(2)}`;
         this.ventasDia.textContent = `$${this.ventasDelDia.toFixed(2)}`;
+        this.productosBajos.textContent = this.inventario.productosConBajoStock();
+        this.totalCategorias.textContent = this.inventario.categoriasUnicas();
         this.actualizarTablaInventario();
-        console.log('UI actualizada');
+        localStorage.setItem('ventasDelDia', this.ventasDelDia);
     }
 
     actualizarTablaInventario() {
@@ -121,6 +147,7 @@ class UI {
             row.innerHTML = `
                 <td class="py-2 px-4 border-b">${producto.id}</td>
                 <td class="py-2 px-4 border-b">${producto.nombre}</td>
+                <td class="py-2 px-4 border-b">${producto.categoria}</td>
                 <td class="py-2 px-4 border-b">$${producto.precio.toFixed(2)}</td>
                 <td class="py-2 px-4 border-b">${producto.cantidad}</td>
                 <td class="py-2 px-4 border-b">$${producto.valorTotal().toFixed(2)}</td>
@@ -132,20 +159,23 @@ class UI {
             this.tablaInventario.appendChild(row);
         });
 
-        // Agregar event listeners para editar y eliminar
+        this.actualizarEventListenersTabla();
+    }
+
+    actualizarEventListenersTabla() {
         document.querySelectorAll('.editar-producto').forEach(btn => {
             btn.addEventListener('click', (e) => this.editarProducto(parseInt(e.target.dataset.id)));
         });
         document.querySelectorAll('.eliminar-producto').forEach(btn => {
             btn.addEventListener('click', (e) => this.eliminarProducto(parseInt(e.target.dataset.id)));
         });
-        console.log('Tabla de inventario actualizada');
     }
 
     mostrarModalProducto(producto = null) {
         const modalTitulo = document.getElementById('modal-titulo');
         const productoId = document.getElementById('producto-id');
         const productoNombre = document.getElementById('producto-nombre');
+        const productoCategoria = document.getElementById('producto-categoria');
         const productoPrecio = document.getElementById('producto-precio');
         const productoCantidad = document.getElementById('producto-cantidad');
 
@@ -153,14 +183,13 @@ class UI {
             modalTitulo.textContent = 'Editar Producto';
             productoId.value = producto.id;
             productoNombre.value = producto.nombre;
+            productoCategoria.value = producto.categoria;
             productoPrecio.value = producto.precio;
             productoCantidad.value = producto.cantidad;
-            console.log(`Mostrando modal para editar producto: ${producto.nombre}`);
         } else {
             modalTitulo.textContent = 'Agregar Producto';
             this.formProducto.reset();
             productoId.value = '';
-            console.log('Mostrando modal para agregar nuevo producto');
         }
 
         this.modalProducto.classList.remove('hidden');
@@ -170,7 +199,6 @@ class UI {
     cerrarModalProducto() {
         this.modalProducto.classList.remove('flex');
         this.modalProducto.classList.add('hidden');
-        console.log('Modal de producto cerrado');
     }
 
     mostrarModalVenta() {
@@ -185,28 +213,25 @@ class UI {
 
         this.modalVenta.classList.remove('hidden');
         this.modalVenta.classList.add('flex');
-        console.log('Modal de venta abierto');
     }
 
     cerrarModalVenta() {
         this.modalVenta.classList.remove('flex');
         this.modalVenta.classList.add('hidden');
-        console.log('Modal de venta cerrado');
     }
 
     manejarSubmitProducto(e) {
         e.preventDefault();
         const id = document.getElementById('producto-id').value;
         const nombre = document.getElementById('producto-nombre').value;
+        const categoria = document.getElementById('producto-categoria').value;
         const precio = parseFloat(document.getElementById('producto-precio').value);
         const cantidad = parseInt(document.getElementById('producto-cantidad').value);
 
         if (id) {
-            this.inventario.actualizarProducto(parseInt(id), nombre, precio, cantidad);
-            console.log(`Producto actualizado - ID: ${id}, Nombre: ${nombre}, Precio: $${precio}, Cantidad: ${cantidad}`);
+            this.inventario.actualizarProducto(parseInt(id), nombre, precio, cantidad, categoria);
         } else {
-            const nuevoProducto = this.inventario.agregarProducto(nombre, precio, cantidad);
-            console.log(`Nuevo producto agregado - ID: ${nuevoProducto.id}, Nombre: ${nombre}, Precio: $${precio}, Cantidad: ${cantidad}`);
+            this.inventario.agregarProducto(nombre, precio, cantidad, categoria);
         }
 
         this.actualizarUI();
@@ -222,13 +247,9 @@ class UI {
         if (ventaTotal > 0) {
             this.ventasDelDia += ventaTotal;
             this.actualizarUI();
-            const mensaje = `Venta realizada por $${ventaTotal.toFixed(2)}`;
-            alert(mensaje);
-            console.log(mensaje);
+            alert(`Venta realizada por $${ventaTotal.toFixed(2)}`);
         } else {
-            const mensaje = 'No se pudo realizar la venta. Verifique la cantidad disponible.';
-            alert(mensaje);
-            console.error(mensaje);
+            alert('No se pudo realizar la venta. Verifique la cantidad disponible.');
         }
 
         this.cerrarModalVenta();
@@ -248,16 +269,10 @@ class UI {
             if (confirmacion) {
                 if (this.inventario.eliminarProducto(id)) {
                     this.actualizarUI();
-                    const mensaje = `Producto "${producto.nombre}" eliminado con éxito.`;
-                    alert(mensaje);
-                    console.log(mensaje);
+                    alert(`Producto "${producto.nombre}" eliminado con éxito.`);
                 } else {
-                    const mensaje = 'No se pudo eliminar el producto.';
-                    alert(mensaje);
-                    console.error(mensaje);
+                    alert('No se pudo eliminar el producto.');
                 }
-            } else {
-                console.log(`Eliminación del producto "${producto.nombre}" cancelada por el usuario.`);
             }
         }
     }
@@ -273,6 +288,8 @@ class UI {
             <p>Total de productos: ${this.inventario.cantidadTotalProductos()}</p>
             <p>Valor total del inventario: $${this.inventario.valorTotalInventario().toFixed(2)}</p>
             <p>Ventas del día: $${this.ventasDelDia.toFixed(2)}</p>
+            <p>Productos con bajo stock: ${this.inventario.productosConBajoStock()}</p>
+            <p>Categorías únicas: ${this.inventario.categoriasUnicas()}</p>
 
             <h3 class="text-xl font-semibold mt-4 mb-2">Detalles del inventario:</h3>
             <table class="w-full border-collapse border border-gray-300">
@@ -280,6 +297,7 @@ class UI {
                     <tr class="bg-gray-100">
                         <th class="border border-gray-300 p-2">ID</th>
                         <th class="border border-gray-300 p-2">Nombre</th>
+                        <th class="border border-gray-300 p-2">Categoría</th>
                         <th class="border border-gray-300 p-2">Precio</th>
                         <th class="border border-gray-300 p-2">Cantidad</th>
                         <th class="border border-gray-300 p-2">Valor total</th>
@@ -290,6 +308,7 @@ class UI {
                         <tr>
                             <td class="border border-gray-300 p-2">${p.id}</td>
                             <td class="border border-gray-300 p-2">${p.nombre}</td>
+                            <td class="border border-gray-300 p-2">${p.categoria}</td>
                             <td class="border border-gray-300 p-2">$${p.precio.toFixed(2)}</td>
                             <td class="border border-gray-300 p-2">${p.cantidad}</td>
                             <td class="border border-gray-300 p-2">$${p.valorTotal().toFixed(2)}</td>
@@ -299,30 +318,159 @@ class UI {
             </table>
         `;
 
-        // Mostrar en la interfaz
         this.informeContenido.innerHTML = informe;
-        if (this.modalInforme) {
-            this.modalInforme.classList.remove('hidden');
-            this.modalInforme.classList.add('flex');
-        } else {
-            console.error('El elemento modal de informe no se encuentra en el DOM');
-        }
-
-        // Mostrar en la consola
-        console.log('--- Informe de Inventario ---');
-        console.log(`Total de productos: ${this.inventario.cantidadTotalProductos()}`);
-        console.log(`Valor total del inventario: $${this.inventario.valorTotalInventario().toFixed(2)}`);
-        console.log(`Ventas del día: $${this.ventasDelDia.toFixed(2)}`);
-        console.log('Detalles del inventario:');
-        this.inventario.productos.forEach(p => {
-            console.log(`ID: ${p.id}, Nombre: ${p.nombre}, Precio: $${p.precio.toFixed(2)}, Cantidad: ${p.cantidad}, Valor total: $${p.valorTotal().toFixed(2)}`);
-        });
+        this.modalInforme.classList.remove('hidden');
+        this.modalInforme.classList.add('flex');
     }
 
     cerrarModalInforme() {
         this.modalInforme.classList.remove('flex');
         this.modalInforme.classList.add('hidden');
-        console.log('Modal de informe cerrado');
+    }
+
+    filtrarProductos() {
+        const terminoBusqueda = this.buscarProducto.value.toLowerCase();
+        const categoriaSeleccionada = this.filtrarCategoria.value;
+
+        const productosFiltrados = this.inventario.productos.filter(producto => {
+            const coincideNombre = producto.nombre.toLowerCase().includes(terminoBusqueda);
+            const coincideCategoria = categoriaSeleccionada === '' || producto.categoria === categoriaSeleccionada;
+            return coincideNombre && coincideCategoria;
+        });
+
+        this.mostrarProductosFiltrados(productosFiltrados);
+    }
+
+    mostrarProductosFiltrados(productos) {
+        this.tablaInventario.innerHTML = '';
+        productos.forEach(producto => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="py-2 px-4 border-b">${producto.id}</td>
+                <td class="py-2 px-4 border-b">${producto.nombre}</td>
+                <td class="py-2 px-4 border-b">${producto.categoria}</td>
+                <td class="py-2 px-4 border-b">$${producto.precio.toFixed(2)}</td>
+                <td class="py-2 px-4 border-b">${producto.cantidad}</td>
+                <td class="py-2 px-4 border-b">$${producto.valorTotal().toFixed(2)}</td>
+                <td class="py-2 px-4 border-b">
+                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mr-2 editar-producto" data-id="${producto.id}">Editar</button>
+                    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded eliminar-producto" data-id="${producto.id}">Eliminar</button>
+                </td>
+            `;
+            this.tablaInventario.appendChild(row);
+        });
+
+        this.actualizarEventListenersTabla();
+    }
+
+    exportarInventario() {
+        const datos = this.inventario.productos.map(p => ({
+            ID: p.id,
+            Nombre: p.nombre,
+            Categoria: p.categoria,
+            Precio: p.precio,
+            Cantidad: p.cantidad,
+            "Valor Total": p.valorTotal()
+        }));
+
+        const csvContent = "data:text/csv;charset=utf-8," 
+            + Object.keys(datos[0]).join(",") + "\n"
+            + datos.map(row => Object.values(row).join(",")).join("\n");
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "inventario.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    importarInventario(archivo) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const contenido = e.target.result;
+            const lineas = contenido.split('\n');
+            const encabezados = lineas[0].split(',');
+            
+            for (let i = 1; i < lineas.length; i++) {
+                const valores = lineas[i].split(',');
+                if (valores.length === encabezados.length) {
+                    const producto = {
+                        nombre: valores[1],
+                        categoria: valores[2],
+                        precio: parseFloat(valores[3]),
+                        cantidad: parseInt(valores[4])
+                    };
+                    this.inventario.agregarProducto(producto.nombre, producto.precio, producto.cantidad, producto.categoria);
+                }
+            }
+            this.actualizarUI();
+            alert('Inventario importado con éxito');
+        };
+        reader.readAsText(archivo);
+    }
+
+    mostrarGraficos() {
+        const categoriasData = this.obtenerDatosPorCategoria();
+        this.crearGraficoBarras(categoriasData);
+        this.crearGraficoPastel(categoriasData);
+    }
+
+    obtenerDatosPorCategoria() {
+        const categorias = {};
+        this.inventario.productos.forEach(producto => {
+            if (categorias[producto.categoria]) {
+                categorias[producto.categoria] += producto.valorTotal();
+            } else {
+                categorias[producto.categoria] = producto.valorTotal();
+            }
+        });
+        return categorias;
+    }
+
+    crearGraficoBarras(datos) {
+        const ctx = document.getElementById('graficoBarras').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(datos),
+                datasets: [{
+                    label: 'Valor por Categoría',
+                    data: Object.values(datos),
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgb(54, 162, 235)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+
+    crearGraficoPastel(datos) {
+        const ctx = document.getElementById('graficoPastel').getContext('2d');
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: Object.keys(datos),
+                datasets: [{
+                    data: Object.values(datos),
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 206, 86, 0.8)',
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(153, 102, 255, 0.8)'
+                    ]
+                }]
+            }
+        });
     }
 }
 
@@ -363,4 +511,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Actualizar la UI inicial
     ui.actualizarUI();
+
+    // Configurar eventos adicionales
+    document.getElementById('btn-exportar').addEventListener('click', () => ui.exportarInventario());
+    document.getElementById('btn-importar').addEventListener('click', () => {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.csv';
+        input.onchange = e => ui.importarInventario(e.target.files[0]);
+        input.click();
+    });
+    document.getElementById('btn-graficos').addEventListener('click', () => ui.mostrarGraficos());
 });

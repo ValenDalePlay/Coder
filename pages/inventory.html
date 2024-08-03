@@ -5,58 +5,138 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TechStore - Inventario</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="css/styles.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
+    <link href="../css/styles.css" rel="stylesheet">
+    <link rel="icon" href="../assets/favicon.ico" type="image/x-icon">
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 flex flex-col min-h-screen">
     <header class="bg-blue-600 text-white shadow-md">
-        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
             <div class="flex items-center">
-                <img src="assets/logo.svg" alt="TechStore Logo" class="h-8 w-auto mr-3">
-                <span class="font-bold text-xl">TechStore</span>
+                <img src="../assets/logo.svg" alt="TechStore Logo" class="h-10 w-auto mr-3">
+                <span class="font-bold text-2xl">TechStore</span>
             </div>
-            <nav>
-                <a href="index.html" class="hover:text-blue-200 mx-3">Inicio</a>
-                <a href="inventory.html" class="hover:text-blue-200 mx-3">Inventario</a>
-                <a href="reports.html" class="hover:text-blue-200 mx-3">Informes</a>
+            <nav class="hidden md:flex space-x-4">
+                <a href="../index.html" class="hover:text-blue-200 transition duration-300">Inicio</a>
+                <a href="inventory.html" class="hover:text-blue-200 transition duration-300">Inventario</a>
+                <a href="reports.html" class="hover:text-blue-200 transition duration-300">Informes</a>
             </nav>
+            <button class="md:hidden focus:outline-none">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
         </div>
     </header>
-    <main class="container mx-auto px-6 py-8">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">Inventario de Productos</h1>
-        <div class="overflow-x-auto">
-            <table class="min-w-full bg-white">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="py-2 px-4 border-b">ID</th>
-                        <th class="py-2 px-4 border-b">Nombre</th>
-                        <th class="py-2 px-4 border-b">Categoría</th>
-                        <th class="py-2 px-4 border-b">Precio</th>
-                        <th class="py-2 px-4 border-b">Cantidad</th>
-                        <th class="py-2 px-4 border-b">Valor Total</th>
-                        <th class="py-2 px-4 border-b">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="tabla-inventario">
-                </tbody>
-            </table>
-        </div>
-        <div class="flex space-x-4 mt-6">
-            <button id="btn-agregar" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                Agregar Producto
-            </button>
-            <button id="btn-editar" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">
-                Editar Producto
-            </button>
-            <button id="btn-eliminar" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                Eliminar Producto
-            </button>
-        </div>
+
+    <main class="flex-grow container mx-auto px-6 py-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-8 text-center">Inventario de Productos</h1>
+
+        <section id="inventory-summary" class="mb-12">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-6">Resumen del Inventario</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-white rounded-lg shadow-md p-6 transition duration-300 hover:shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-700">Total Productos</h3>
+                        <i class="fas fa-boxes text-3xl text-blue-500"></i>
+                    </div>
+                    <p id="total-productos" class="text-3xl font-bold mt-4">0</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6 transition duration-300 hover:shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-700">Valor Total</h3>
+                        <i class="fas fa-dollar-sign text-3xl text-green-500"></i>
+                    </div>
+                    <p id="valor-total" class="text-3xl font-bold mt-4">$0.00</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6 transition duration-300 hover:shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-700">Productos Bajos</h3>
+                        <i class="fas fa-exclamation-triangle text-3xl text-yellow-500"></i>
+                    </div>
+                    <p id="productos-bajos" class="text-3xl font-bold mt-4">0</p>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6 transition duration-300 hover:shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-semibold text-gray-700">Categorías</h3>
+                        <i class="fas fa-tags text-3xl text-purple-500"></i>
+                    </div>
+                    <p id="total-categorias" class="text-3xl font-bold mt-4">0</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="inventory-actions" class="mb-8">
+            <div class="flex flex-wrap justify-between items-center">
+                <div class="flex space-x-4 mb-4 md:mb-0">
+                    <button id="btn-agregar" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-110">
+                        <i class="fas fa-plus mr-2"></i>Agregar Producto
+                    </button>
+                    <button id="btn-importar" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-110">
+                        <i class="fas fa-file-import mr-2"></i>Importar
+                    </button>
+                    <button id="btn-exportar" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-110">
+                        <i class="fas fa-file-export mr-2"></i>Exportar
+                    </button>
+                </div>
+                <div class="flex space-x-4">
+                    <input type="text" id="buscar-producto" placeholder="Buscar producto..." class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <select id="filtrar-categoria" class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <option value="">Todas las categorías</option>
+                        <option value="electronica">Electrónica</option>
+                        <option value="hogar">Hogar</option>
+                        <option value="moda">Moda</option>
+                        <option value="deportes">Deportes</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <section id="inventory-table" class="mb-8">
+            <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+                <table class="min-w-full">
+                    <thead class="bg-gray-200">
+                        <tr>
+                            <th class="py-3 px-4 text-left">ID</th>
+                            <th class="py-3 px-4 text-left">Nombre</th>
+                            <th class="py-3 px-4 text-left">Categoría</th>
+                            <th class="py-3 px-4 text-left">Precio</th>
+                            <th class="py-3 px-4 text-left">Cantidad</th>
+                            <th class="py-3 px-4 text-left">Valor Total</th>
+                            <th class="py-3 px-4 text-left">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-inventario">
+                        <!-- Los productos se insertarán aquí dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-4 flex justify-end">
+                <button id="cargar-mas" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+                    Cargar Más
+                </button>
+            </div>
+        </section>
     </main>
-    <footer class="bg-gray-800 text-white py-4">
-        <div class="container mx-auto px-6 text-center">
-            © 2024 TechStore - Sistema de Gestión de Inventario. Todos los derechos reservados.
+
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-wrap justify-between items-center">
+                <div class="w-full md:w-1/3 text-center md:text-left mb-6 md:mb-0">
+                    <h3 class="text-lg font-semibold mb-2">TechStore</h3>
+                    <p class="text-sm">Sistema de Gestión de Inventario</p>
+                </div>
+                <div class="w-full md:w-1/3 text-center mb-6 md:mb-0">
+                    <p class="text-sm">&copy; 2024 TechStore. Todos los derechos reservados.</p>
+                </div>
+                <div class="w-full md:w-1/3 text-center md:text-right">
+                    <a href="#" class="text-white hover:text-blue-300 mx-2"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="text-white hover:text-blue-300 mx-2"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-white hover:text-blue-300 mx-2"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
         </div>
     </footer>
+
+    <!-- Modal para agregar/editar producto -->
     <div id="modal-producto" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
         <div class="bg-white rounded-lg p-8 max-w-md w-full">
             <h2 id="modal-titulo" class="text-2xl font-bold mb-4">Agregar Producto</h2>
@@ -80,21 +160,42 @@
                     <label for="producto-precio" class="block text-gray-700 text-sm font-bold mb-2">Precio:</label>
                     <input type="number" id="producto-precio" name="precio" step="0.01" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
                 </div>
-                <div class="mb-6">
+                <div class="mb-4">
                     <label for="producto-cantidad" class="block text-gray-700 text-sm font-bold mb-2">Cantidad:</label>
                     <input type="number" id="producto-cantidad" name="cantidad" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
                 </div>
+                <div class="mb-6">
+                    <label for="producto-descripcion" class="block text-gray-700 text-sm font-bold mb-2">Descripción:</label>
+                    <textarea id="producto-descripcion" name="descripcion" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="3"></textarea>
+                </div>
                 <div class="flex items-center justify-between">
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
                         Guardar
                     </button>
-                    <button type="button" id="cerrar-modal-producto" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    <button type="button" id="cerrar-modal-producto" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
                         Cancelar
                     </button>
                 </div>
             </form>
         </div>
     </div>
-    <script src="js/inventory.js"></script>
+
+    <!-- Modal de confirmación para eliminar producto -->
+    <div id="modal-confirmar-eliminar" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full">
+            <h2 class="text-2xl font-bold mb-4">Confirmar Eliminación</h2>
+            <p class="mb-6">¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer.</p>
+            <div class="flex justify-end space-x-4">
+                <button id="confirmar-eliminar" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
+                    Eliminar
+                </button>
+                <button id="cancelar-eliminar" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/inventory.js"></script>
 </body>
 </html>

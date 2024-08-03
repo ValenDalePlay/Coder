@@ -2,6 +2,7 @@ class InvoiceManager {
     constructor() {
         this.invoices = JSON.parse(localStorage.getItem('invoices')) || [];
         this.displayInvoices();
+        this.setupEventListeners();
     }
 
     displayInvoices() {
@@ -22,6 +23,11 @@ class InvoiceManager {
             `;
         });
         this.attachEventListeners();
+    }
+
+    setupEventListeners() {
+        document.getElementById('search-invoice').addEventListener('input', (e) => this.searchInvoices(e.target.value));
+        document.getElementById('filter-date').addEventListener('change', (e) => this.filterInvoicesByDate(e.target.value));
     }
 
     attachEventListeners() {
@@ -70,9 +76,89 @@ Fecha: ${new Date(invoice.date).toLocaleString()}
             URL.revokeObjectURL(url);
         }
     }
+
+    searchInvoices(searchTerm) {
+        const filteredInvoices = this.invoices.filter(invoice => 
+            invoice.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            invoice.id.toString().includes(searchTerm)
+        );
+        this.displayFilteredInvoices(filteredInvoices);
+    }
+
+    filterInvoicesByDate(date) {
+        const filteredInvoices = this.invoices.filter(invoice => 
+            new Date(invoice.date).toDateString() === new Date(date).toDateString()
+        );
+        this.displayFilteredInvoices(filteredInvoices);
+    }
+
+    displayFilteredInvoices(filteredInvoices) {
+        const tableBody = document.getElementById('tabla-facturas');
+        tableBody.innerHTML = '';
+        filteredInvoices.forEach(invoice => {
+            const row = tableBody.insertRow();
+            row.innerHTML = `
+                <td>${invoice.id}</td>
+                <td>${invoice.productName}</td>
+                <td>${invoice.quantity}</td>
+                <td>$${invoice.totalPrice.toFixed(2)}</td>
+                <td>${new Date(invoice.date).toLocaleString()}</td>
+                <td>
+                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mr-2 view-btn" data-id="${invoice.id}">Ver</button>
+                    <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded download-btn" data-id="${invoice.id}">Descargar</button>
+                </td>
+            `;
+        });
+        this.attachEventListeners();
+    }
+
+    getTotalSales() {
+        return this.invoices.reduce((total, invoice) => total + invoice.totalPrice, 0);
+    }
+
+    getMostSoldProduct() {
+        const productSales = {};
+        this.invoices.forEach(invoice => {
+            if (productSales[invoice.productName]) {
+                productSales[invoice.productName] += invoice.quantity;
+            } else {
+                productSales[invoice.productName] = invoice.quantity;
+            }
+        });
+        return Object.entries(productSales).reduce((a, b) => a[1] > b[1] ? a : b)[0];
+    }
+
+    updateDashboard() {
+        document.getElementById('total-ventas').textContent = `$${this.getTotalSales().toFixed(2)}`;
+        document.getElementById('producto-mas-vendido').textContent = this.getMostSoldProduct();
+        document.getElementById('total-facturas').textContent = this.invoices.length;
+    }
 }
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', () => {
-    new InvoiceManager();
+    const invoiceManager = new InvoiceManager();
+    invoiceManager.updateDashboard();
+
+    // Event listener para cerrar el modal de factura
+    document.getElementById('cerrar-modal-factura').addEventListener('click', () => {
+        document.getElementById('modal-factura').classList.add('hidden');
+    });
+
+    // Event listener para exportar todas las facturas
+    document.getElementById('exportar-facturas').addEventListener('click', () => {
+        const csvContent = "data:text/csv;charset=utf-8,"
+            + "ID,Producto,Cantidad,Precio Total,Fecha\n"
+            + invoiceManager.invoices.map(invoice => 
+                `${invoice.id},${invoice.productName},${invoice.quantity},${invoice.totalPrice},${invoice.date}`
+            ).join("\n");
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "facturas.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
 });
