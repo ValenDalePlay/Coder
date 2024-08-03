@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechStore - Sistema de Gestión de Inventario</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="css/styles.css" rel="stylesheet">
+    <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+</head>
+<body class="bg-gray-100">
+    <header class="bg-blue-600 text-white shadow-md">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <div class="flex items-center">
+                <img src="assets/logo.svg" alt="TechStore Logo" class="h-8 w-auto mr-3">
+                <span class="font-bold text-xl">TechStore</span>
+            </div>
+            <nav>
+                <a href="index.html" class="hover:text-blue-200 mx-3">Inicio</a>
+                <a href="pages/inventory.html" class="hover:text-blue-200 mx-3">Inventario</a>
+                <a href="pages/reports.html" class="hover:text-blue-200 mx-3">Informes</a>
+            </nav>
+        </div>
+    </header>
+    <main class="container mx-auto px-6 py-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Bienvenido al Sistema de Gestión de Inventario</h1>
+        <section id="dashboard" class="mb-8">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Panel de Control</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Total de Productos</h3>
+                    <p id="total-productos" class="text-3xl font-bold">0</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Valor del Inventario</h3>
+                    <p id="valor-inventario" class="text-3xl font-bold">$0.00</p>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-2">Ventas del Día</h3>
+                    <p id="ventas-dia" class="text-3xl font-bold">$0.00</p>
+                </div>
+            </div>
+        </section>
+        <section id="acciones" class="mb-8">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Acciones Rápidas</h2>
+            <div class="flex space-x-4">
+                <a href="pages/inventory.html" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    Gestionar Inventario
+                </a>
+                <a href="pages/reports.html" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                    Ver Informes
+                </a>
+            </div>
+        </section>
+        <section id="resumen">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Resumen del Sistema</h2>
+            <p class="text-gray-600">
+                Desde aquí podrás acceder a todas las funcionalidades del sistema:
+            </p>
+            <ul class="list-disc list-inside mt-2 text-gray-600">
+                <li>Gestión completa del inventario</li>
+                <li>Generación de informes detallados</li>
+                <li>Registro y seguimiento de ventas</li>
+                <li>Análisis de rendimiento del negocio</li>
+            </ul>
+        </section>
+    </main>
+    <footer class="bg-gray-800 text-white py-4">
+        <div class="container mx-auto px-6 text-center">
+            © 2024 TechStore - Sistema de Gestión de Inventario. Todos los derechos reservados.
+        </div>
+    </footer>
+    <script src="js/app.js"></script>
+</body>
+</html>
