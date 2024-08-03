@@ -3,109 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechStore - Gestión de Inventario</title>
+    <title>TechStore - Inventario</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link href="../css/styles.css" rel="stylesheet">
-    <link href="../css/inventory.css" rel="stylesheet">
+    <link href="css/styles.css" rel="stylesheet">
 </head>
 <body class="bg-gray-100">
     <header class="bg-blue-600 text-white shadow-md">
         <div class="container mx-auto px-6 py-3 flex justify-between items-center">
             <div class="flex items-center">
-                <img src="../assets/logo.svg" alt="TechStore Logo" class="h-8 w-auto mr-3">
+                <img src="assets/logo.svg" alt="TechStore Logo" class="h-8 w-auto mr-3">
                 <span class="font-bold text-xl">TechStore</span>
             </div>
             <nav>
-                <a href="../index.html" class="hover:text-blue-200 mx-3">Inicio</a>
-                <a href="#" class="hover:text-blue-200 mx-3">Inventario</a>
+                <a href="index.html" class="hover:text-blue-200 mx-3">Inicio</a>
+                <a href="inventory.html" class="hover:text-blue-200 mx-3">Inventario</a>
                 <a href="reports.html" class="hover:text-blue-200 mx-3">Informes</a>
             </nav>
         </div>
     </header>
-
     <main class="container mx-auto px-6 py-8">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6">Gestión de Inventario</h1>
-        
-        <section id="inventory-actions" class="mb-8">
-            <div class="flex justify-between items-center">
-                <button id="btn-add-product" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-                    Agregar Nuevo Producto
-                </button>
-                <div class="flex items-center">
-                    <input type="text" id="search-product" placeholder="Buscar producto..." class="border rounded py-2 px-3 mr-2">
-                    <select id="filter-category" class="border rounded py-2 px-3">
-                        <option value="">Todas las categorías</option>
-                        <!-- Las categorías se cargarán dinámicamente -->
-                    </select>
-                </div>
-            </div>
-        </section>
-
-        <section id="inventory-table">
-            <div class="overflow-x-auto">
-                <table id="inventory-list" class="min-w-full bg-white">
-                    <thead>
-                        <tr>
-                            <th class="py-2 px-4 bg-gray-100 font-semibold text-gray-600 border-b border-gray-200">ID</th>
-                            <th class="py-2 px-4 bg-gray-100 font-semibold text-gray-600 border-b border-gray-200">Nombre</th>
-                            <th class="py-2 px-4 bg-gray-100 font-semibold text-gray-600 border-b border-gray-200">Categoría</th>
-                            <th class="py-2 px-4 bg-gray-100 font-semibold text-gray-600 border-b border-gray-200">Precio</th>
-                            <th class="py-2 px-4 bg-gray-100 font-semibold text-gray-600 border-b border-gray-200">Cantidad</th>
-                            <th class="py-2 px-4 bg-gray-100 font-semibold text-gray-600 border-b border-gray-200">Valor Total</th>
-                            <th class="py-2 px-4 bg-gray-100 font-semibold text-gray-600 border-b border-gray-200">Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Los productos se insertarán aquí dinámicamente -->
-                    </tbody>
-                </table>
-            </div>
-        </section>
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Inventario de Productos</h1>
+        <div class="overflow-x-auto">
+            <table class="min-w-full bg-white">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="py-2 px-4 border-b">ID</th>
+                        <th class="py-2 px-4 border-b">Nombre</th>
+                        <th class="py-2 px-4 border-b">Categoría</th>
+                        <th class="py-2 px-4 border-b">Precio</th>
+                        <th class="py-2 px-4 border-b">Cantidad</th>
+                        <th class="py-2 px-4 border-b">Valor Total</th>
+                        <th class="py-2 px-4 border-b">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-inventario">
+                </tbody>
+            </table>
+        </div>
+        <div class="flex space-x-4 mt-6">
+            <button id="btn-agregar" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Agregar Producto
+            </button>
+            <button id="btn-editar" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">
+                Editar Producto
+            </button>
+            <button id="btn-eliminar" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                Eliminar Producto
+            </button>
+        </div>
     </main>
-
-    <footer class="bg-gray-200 py-4">
-        <div class="container mx-auto px-6 text-center text-gray-600">
+    <footer class="bg-gray-800 text-white py-4">
+        <div class="container mx-auto px-6 text-center">
             © 2024 TechStore - Sistema de Gestión de Inventario. Todos los derechos reservados.
         </div>
     </footer>
-
-    <!-- Modal para agregar/editar producto -->
-    <div id="modal-product" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
+    <div id="modal-producto" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
         <div class="bg-white rounded-lg p-8 max-w-md w-full">
-            <h2 id="modal-title" class="text-2xl font-bold mb-4">Agregar Producto</h2>
-            <form id="form-product">
-                <input type="hidden" id="product-id">
+            <h2 id="modal-titulo" class="text-2xl font-bold mb-4">Agregar Producto</h2>
+            <form id="form-producto">
+                <input type="hidden" id="producto-id">
                 <div class="mb-4">
-                    <label for="product-name" class="block text-gray-700 text-sm font-bold mb-2">Nombre:</label>
-                    <input type="text" id="product-name" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                    <label for="producto-nombre" class="block text-gray-700 text-sm font-bold mb-2">Nombre:</label>
+                    <input type="text" id="producto-nombre" name="nombre" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
                 </div>
                 <div class="mb-4">
-                    <label for="product-category" class="block text-gray-700 text-sm font-bold mb-2">Categoría:</label>
-                    <select id="product-category" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                        <!-- Las categorías se cargarán dinámicamente -->
+                    <label for="producto-categoria" class="block text-gray-700 text-sm font-bold mb-2">Categoría:</label>
+                    <select id="producto-categoria" name="categoria" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                        <option value="">Seleccione una categoría</option>
+                        <option value="electronica">Electrónica</option>
+                        <option value="hogar">Hogar</option>
+                        <option value="moda">Moda</option>
+                        <option value="deportes">Deportes</option>
                     </select>
                 </div>
                 <div class="mb-4">
-                    <label for="product-price" class="block text-gray-700 text-sm font-bold mb-2">Precio:</label>
-                    <input type="number" id="product-price" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" step="0.01" min="0" required>
+                    <label for="producto-precio" class="block text-gray-700 text-sm font-bold mb-2">Precio:</label>
+                    <input type="number" id="producto-precio" name="precio" step="0.01" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
                 </div>
                 <div class="mb-6">
-                    <label for="product-quantity" class="block text-gray-700 text-sm font-bold mb-2">Cantidad:</label>
-                    <input type="number" id="product-quantity" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" min="0" required>
+                    <label for="producto-cantidad" class="block text-gray-700 text-sm font-bold mb-2">Cantidad:</label>
+                    <input type="number" id="producto-cantidad" name="cantidad" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
                 </div>
                 <div class="flex items-center justify-between">
                     <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                         Guardar
                     </button>
-                    <button type="button" id="close-modal-product" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    <button type="button" id="cerrar-modal-producto" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                         Cancelar
                     </button>
                 </div>
             </form>
         </div>
     </div>
-
-    <script src="../js/app.js"></script>
-    <script src="../js/inventory.js"></script>
+    <script src="js/inventory.js"></script>
 </body>
 </html>
