@@ -1,4 +1,3 @@
-// Clase Producto
 class Product {
     constructor(id, name, category, price, quantity, description = '') {
         this.id = id;
@@ -17,23 +16,42 @@ class Product {
 class InventoryManager {
     constructor() {
         this.products = JSON.parse(localStorage.getItem('products')) || [];
+        this.products = this.products.map(p => new Product(p.id, p.name, p.category, p.price, p.quantity, p.description));
         this.invoices = JSON.parse(localStorage.getItem('invoices')) || [];
+        this.setupEventListeners();
         this.displayProducts();
         this.updateDashboard();
-        this.setupEventListeners();
     }
 
     setupEventListeners() {
-        document.getElementById('btn-agregar').addEventListener('click', () => this.showAddProductModal());
-        document.getElementById('form-producto').addEventListener('submit', (e) => this.handleProductSubmit(e));
-        document.getElementById('form-venta').addEventListener('submit', (e) => this.handleSaleSubmit(e));
-        document.querySelectorAll('.modal .close').forEach(button => {
+        // Botones principales
+        document.getElementById('btn-agregar')?.addEventListener('click', () => this.showAddProductModal());
+        document.getElementById('btn-importar')?.addEventListener('click', () => this.showImportModal());
+        document.getElementById('btn-exportar')?.addEventListener('click', () => this.exportToCSV());
+
+        // Formularios
+        document.getElementById('form-producto')?.addEventListener('submit', (e) => this.handleProductSubmit(e));
+        document.getElementById('form-venta')?.addEventListener('submit', (e) => this.handleSaleSubmit(e));
+
+        // Cerrar modales
+        document.querySelectorAll('.close').forEach(button => {
             button.addEventListener('click', () => this.closeModals());
         });
-        document.getElementById('buscar-producto').addEventListener('input', () => this.filterProducts());
-        document.getElementById('filtrar-categoria').addEventListener('change', () => this.filterProducts());
-        document.getElementById('btn-exportar').addEventListener('click', () => this.exportToCSV());
-        document.getElementById('btn-importar').addEventListener('click', () => this.showImportModal());
+
+        // Filtrado y búsqueda
+        document.getElementById('buscar-producto')?.addEventListener('input', () => this.filterProducts());
+        document.getElementById('filtrar-categoria')?.addEventListener('change', () => this.filterProducts());
+
+        // Delegación de eventos para botones dinámicos
+        document.getElementById('tabla-inventario')?.addEventListener('click', (e) => {
+            if (e.target.classList.contains('edit-btn')) {
+                this.showEditModal(e.target.dataset.id);
+            } else if (e.target.classList.contains('delete-btn')) {
+                this.confirmDelete(e.target.dataset.id);
+            } else if (e.target.classList.contains('sale-btn')) {
+                this.showSaleModal(e.target.dataset.id);
+            }
+        });
     }
 
     addProduct(product) {
@@ -127,24 +145,12 @@ class InventoryManager {
                 </td>
             `;
         });
-        this.attachProductEventListeners();
-    }
-
-    attachProductEventListeners() {
-        document.querySelectorAll('.edit-btn').forEach(button => {
-            button.addEventListener('click', (e) => this.showEditModal(e.target.dataset.id));
-        });
-        document.querySelectorAll('.delete-btn').forEach(button => {
-            button.addEventListener('click', (e) => this.confirmDelete(e.target.dataset.id));
-        });
-        document.querySelectorAll('.sale-btn').forEach(button => {
-            button.addEventListener('click', (e) => this.showSaleModal(e.target.dataset.id));
-        });
     }
 
     showAddProductModal() {
         document.getElementById('form-producto').reset();
         document.getElementById('producto-id').value = '';
+        document.getElementById('modal-titulo').textContent = 'Agregar Producto';
         document.getElementById('modal-producto').classList.remove('hidden');
     }
 
@@ -157,6 +163,7 @@ class InventoryManager {
             document.getElementById('producto-precio').value = product.price;
             document.getElementById('producto-cantidad').value = product.quantity;
             document.getElementById('producto-descripcion').value = product.description;
+            document.getElementById('modal-titulo').textContent = 'Editar Producto';
             document.getElementById('modal-producto').classList.remove('hidden');
         }
     }
@@ -204,7 +211,30 @@ class InventoryManager {
             const matchCategory = category === '' || product.category === category;
             return matchSearch && matchCategory;
         });
-        this.displayProducts(filteredProducts);
+        this.displayFilteredProducts(filteredProducts);
+    }
+
+    displayFilteredProducts(products) {
+        const tableBody = document.getElementById('tabla-inventario');
+        if (!tableBody) return;
+        
+        tableBody.innerHTML = '';
+        products.forEach(product => {
+            const row = tableBody.insertRow();
+            row.innerHTML = `
+                <td>${product.id}</td>
+                <td>${product.name}</td>
+                <td>${product.category}</td>
+                <td>$${product.price.toFixed(2)}</td>
+                <td>${product.quantity}</td>
+                <td>$${product.totalValue().toFixed(2)}</td>
+                <td>
+                    <button class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-1 px-2 rounded mr-2 edit-btn" data-id="${product.id}">Editar</button>
+                    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 rounded delete-btn" data-id="${product.id}">Eliminar</button>
+                    <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded ml-2 sale-btn" data-id="${product.id}">Vender</button>
+                </td>
+            `;
+        });
     }
 
     exportToCSV() {
