@@ -2,254 +2,135 @@ class ReportManager {
     constructor() {
         this.products = JSON.parse(localStorage.getItem('products')) || [];
         this.invoices = JSON.parse(localStorage.getItem('invoices')) || [];
+        this.reports = JSON.parse(localStorage.getItem('reports')) || [];
         this.setupEventListeners();
         this.displayReports();
+        this.updateDashboard();
     }
 
     setupEventListeners() {
-        const generateReportBtn = document.getElementById('generate-report-btn');
-        const downloadReportBtn = document.getElementById('download-report-btn');
-        const exportCsvBtn = document.getElementById('export-csv-btn');
-        const refreshDataBtn = document.getElementById('refresh-data-btn');
-        const printReportBtn = document.getElementById('print-report-btn');
-        const performanceReportBtn = document.getElementById('performance-report-btn');
+        document.getElementById('generate-report-btn')?.addEventListener('click', (e) => this.handleGenerateReport(e));
+        document.getElementById('download-report-btn')?.addEventListener('click', () => this.downloadReport());
+        document.getElementById('export-csv-btn')?.addEventListener('click', () => this.exportToCSV());
+        document.getElementById('print-report-btn')?.addEventListener('click', () => this.printReport());
+        document.getElementById('btn-cargar-mas')?.addEventListener('click', () => this.loadMoreReports());
 
-        if (generateReportBtn) generateReportBtn.addEventListener('click', () => this.generateReport());
-        if (downloadReportBtn) downloadReportBtn.addEventListener('click', () => this.downloadReport());
-        if (exportCsvBtn) exportCsvBtn.addEventListener('click', () => this.exportToCSV());
-        if (refreshDataBtn) refreshDataBtn.addEventListener('click', () => this.refreshData());
-        if (printReportBtn) printReportBtn.addEventListener('click', () => this.printReport());
-        if (performanceReportBtn) performanceReportBtn.addEventListener('click', () => this.generatePerformanceReport());
-    }
+        // Modal close button
+        document.querySelector('.modal-close')?.addEventListener('click', () => this.closeModal());
 
-    refreshData() {
-        this.products = JSON.parse(localStorage.getItem('products')) || [];
-        this.invoices = JSON.parse(localStorage.getItem('invoices')) || [];
-        this.displayReports();
-        alert('Datos actualizados correctamente.');
-    }
-
-    generateInventoryReport() {
-        let totalValue = 0;
-        let lowStockItems = 0;
-        const categoryCounts = {};
-
-        this.products.forEach(product => {
-            totalValue += product.price * product.quantity;
-            if (product.quantity < 10) lowStockItems++;
-            categoryCounts[product.category] = (categoryCounts[product.category] || 0) + 1;
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                this.closeModal();
+            }
         });
-
-        return {
-            totalProducts: this.products.length,
-            totalValue: totalValue.toFixed(2),
-            lowStockItems,
-            categoryCounts
-        };
     }
 
-    generateSalesReport() {
-        let totalSales = 0;
-        let totalItems = 0;
-        const salesByProduct = {};
-        const salesByDate = {};
-
-        this.invoices.forEach(invoice => {
-            totalSales += invoice.totalPrice;
-            totalItems += invoice.quantity;
-            salesByProduct[invoice.productName] = (salesByProduct[invoice.productName] || 0) + invoice.quantity;
+    updateDashboard() {
+        document.getElementById('total-informes').textContent = this.reports.length;
+        if (this.reports.length > 0) {
+            const lastReport = this.reports[this.reports.length - 1];
+            document.getElementById('ultimo-informe').textContent = new Date(lastReport.date).toLocaleDateString();
             
-            const date = new Date(invoice.date).toLocaleDateString();
-            salesByDate[date] = (salesByDate[date] || 0) + invoice.totalPrice;
-        });
-
-        return {
-            totalSales: totalSales.toFixed(2),
-            totalItems,
-            salesByProduct,
-            salesByDate
-        };
+            const reportTypes = this.reports.map(report => report.type);
+            const mostCommonType = this.getMostFrequent(reportTypes);
+            document.getElementById('tipo-comun').textContent = mostCommonType || 'N/A';
+        }
     }
 
-    generateFinancialSummary() {
-        const inventoryReport = this.generateInventoryReport();
-        const salesReport = this.generateSalesReport();
-
-        return {
-            totalInventoryValue: inventoryReport.totalValue,
-            totalSales: salesReport.totalSales,
-            estimatedProfit: (salesReport.totalSales - inventoryReport.totalValue).toFixed(2)
-        };
+    getMostFrequent(arr) {
+        return arr.sort((a,b) =>
+            arr.filter(v => v === a).length - arr.filter(v => v === b).length
+        ).pop();
     }
 
     displayReports() {
-        const inventoryReport = this.generateInventoryReport();
-        const salesReport = this.generateSalesReport();
-        const financialSummary = this.generateFinancialSummary();
+        const tableBody = document.getElementById('tabla-informes');
+        if (!tableBody) return;
 
-        this.displayInventorySummary(inventoryReport);
-        this.displaySalesSummary(salesReport);
-        this.displayFinancialSummary(financialSummary);
-        this.createCharts(inventoryReport, salesReport);
-    }
-
-    displayInventorySummary(report) {
-        const inventorySummary = document.getElementById('inventory-summary');
-        if (inventorySummary) {
-            inventorySummary.innerHTML = `
-                <h3 class="text-xl font-semibold mb-2">Resumen de Inventario</h3>
-                <p>Total de Productos: ${report.totalProducts}</p>
-                <p>Valor Total del Inventario: $${report.totalValue}</p>
-                <p>Productos con Stock Bajo: ${report.lowStockItems}</p>
-                <h4 class="text-lg font-semibold mt-2 mb-1">Productos por Categoría:</h4>
-                <ul>
-                    ${Object.entries(report.categoryCounts).map(([category, count]) => 
-                        `<li>${category}: ${count}</li>`).join('')}
-                </ul>
+        tableBody.innerHTML = '';
+        this.reports.slice(0, 10).forEach(report => {
+            const row = tableBody.insertRow();
+            row.innerHTML = `
+                <td>${report.id}</td>
+                <td>${report.type}</td>
+                <td>${new Date(report.date).toLocaleDateString()}</td>
+                <td>
+                    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded mr-2 view-btn" data-id="${report.id}">Ver</button>
+                    <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 rounded download-btn" data-id="${report.id}">Descargar</button>
+                </td>
             `;
-        }
+        });
+
+        // Add event listeners to the new buttons
+        document.querySelectorAll('.view-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => this.viewReport(e.target.dataset.id));
+        });
+        document.querySelectorAll('.download-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => this.downloadSpecificReport(e.target.dataset.id));
+        });
     }
 
-    displaySalesSummary(report) {
-        const salesSummary = document.getElementById('sales-summary');
-        if (salesSummary) {
-            salesSummary.innerHTML = `
-                <h3 class="text-xl font-semibold mb-2">Resumen de Ventas</h3>
-                <p>Total de Ventas: $${report.totalSales}</p>
-                <p>Total de Artículos Vendidos: ${report.totalItems}</p>
-                <h4 class="text-lg font-semibold mt-2 mb-1">Ventas por Producto:</h4>
-                <ul>
-                    ${Object.entries(report.salesByProduct).map(([product, quantity]) => 
-                        `<li>${product}: ${quantity}</li>`).join('')}
-                </ul>
-            `;
-        }
-    }
+    handleGenerateReport(e) {
+        e.preventDefault();
+        const type = document.getElementById('tipo-informe').value;
+        const startDate = document.getElementById('fecha-inicio').value;
+        const endDate = document.getElementById('fecha-fin').value;
+        const format = document.getElementById('formato-informe').value;
 
-    displayFinancialSummary(summary) {
-        const financialSummary = document.getElementById('financial-summary');
-        if (financialSummary) {
-            financialSummary.innerHTML = `
-                <h3 class="text-xl font-semibold mb-2">Resumen Financiero</h3>
-                <p>Valor Total del Inventario: $${summary.totalInventoryValue}</p>
-                <p>Total de Ventas: $${summary.totalSales}</p>
-                <p>Beneficio Estimado: $${summary.estimatedProfit}</p>
-            `;
-        }
-    }
-
-    createCharts(inventoryReport, salesReport) {
-        this.createInventoryChart(inventoryReport);
-        this.createSalesChart(salesReport);
-    }
-
-    createInventoryChart(report) {
-        const ctx = document.getElementById('inventory-chart');
-        if (ctx) {
-            if (window.inventoryChart) window.inventoryChart.destroy();
-            window.inventoryChart = new Chart(ctx, {
-                type: 'pie',
-                data: {
-                    labels: Object.keys(report.categoryCounts),
-                    datasets: [{
-                        data: Object.values(report.categoryCounts),
-                        backgroundColor: [
-                            'rgba(255, 99, 132, 0.8)',
-                            'rgba(54, 162, 235, 0.8)',
-                            'rgba(255, 206, 86, 0.8)',
-                            'rgba(75, 192, 192, 0.8)',
-                            'rgba(153, 102, 255, 0.8)'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    title: {
-                        display: true,
-                        text: 'Distribución de Productos por Categoría'
-                    }
-                }
-            });
-        }
-    }
-
-    createSalesChart(report) {
-        const ctx = document.getElementById('sales-chart');
-        if (ctx) {
-            const dates = Object.keys(report.salesByDate).sort((a, b) => new Date(a) - new Date(b));
-            const sales = dates.map(date => report.salesByDate[date]);
-
-            if (window.salesChart) window.salesChart.destroy();
-            window.salesChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: dates,
-                    datasets: [{
-                        label: 'Ventas Diarias',
-                        data: sales,
-                        borderColor: 'rgb(75, 192, 192)',
-                        tension: 0.1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Ventas ($)'
-                            }
-                        }
-                    },
-                    title: {
-                        display: true,
-                        text: 'Tendencia de Ventas'
-                    }
-                }
-            });
-        }
-    }
-
-    generateReport() {
-        const startDate = document.getElementById('start-date')?.value;
-        const endDate = document.getElementById('end-date')?.value;
-        const reportType = document.getElementById('report-type')?.value;
-
-        if (!startDate || !endDate || !reportType) {
-            alert('Por favor, seleccione fechas y tipo de reporte.');
+        if (!type || !startDate || !endDate || !format) {
+            alert('Por favor, complete todos los campos.');
             return;
         }
 
+        const report = this.generateReport(type, startDate, endDate);
+        this.displayReportContent(report);
+        this.saveReport(report);
+        this.updateDashboard();
+        this.displayReports();
+    }
+
+    generateReport(type, startDate, endDate) {
+        // Filtrar las facturas por fecha
         const filteredInvoices = this.invoices.filter(invoice => {
             const invoiceDate = new Date(invoice.date);
             return invoiceDate >= new Date(startDate) && invoiceDate <= new Date(endDate);
         });
 
         let reportContent = '';
-        switch (reportType) {
-            case 'sales':
-                reportContent = this.generateDetailedSalesReport(filteredInvoices);
+        switch (type) {
+            case 'ventas':
+                reportContent = this.generateSalesReport(filteredInvoices);
                 break;
-            case 'inventory':
-                reportContent = this.generateDetailedInventoryReport();
+            case 'inventario':
+                reportContent = this.generateInventoryReport();
                 break;
-            case 'financial':
-                reportContent = this.generateDetailedFinancialReport(filteredInvoices);
+            case 'ingresos':
+                reportContent = this.generateIncomeReport(filteredInvoices);
+                break;
+            case 'ganancias':
+                reportContent = this.generateProfitReport(filteredInvoices);
+                break;
+            case 'productos':
+                reportContent = this.generatePopularProductsReport(filteredInvoices);
                 break;
             default:
-                reportContent = '<p>Tipo de reporte no válido</p>';
+                reportContent = 'Tipo de informe no válido';
         }
 
-        const reportContentElement = document.getElementById('report-content');
-        if (reportContentElement) {
-            reportContentElement.innerHTML = reportContent;
-        }
+        return {
+            id: Date.now(),
+            type: type,
+            date: new Date().toISOString(),
+            content: reportContent,
+            startDate: startDate,
+            endDate: endDate
+        };
     }
 
-    generateDetailedSalesReport(invoices) {
+    generateSalesReport(invoices) {
         let totalSales = 0;
-        let salesByProduct = {};
+        const salesByProduct = {};
 
         invoices.forEach(invoice => {
             totalSales += invoice.totalPrice;
@@ -257,161 +138,141 @@ class ReportManager {
         });
 
         return `
-            <h2 class="text-2xl font-bold mb-4">Reporte Detallado de Ventas</h2>
+            <h2 class="text-2xl font-bold mb-4">Informe de Ventas</h2>
             <p><strong>Total de Ventas:</strong> $${totalSales.toFixed(2)}</p>
             <h3 class="text-xl font-semibold mt-4 mb-2">Ventas por Producto:</h3>
             <ul>
                 ${Object.entries(salesByProduct).map(([product, quantity]) => 
                     `<li>${product}: ${quantity} unidades</li>`).join('')}
             </ul>
-            <h3 class="text-xl font-semibold mt-4 mb-2">Detalle de Ventas:</h3>
-            <table class="min-w-full bg-white">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="py-2 px-4 border-b">Fecha</th>
-                        <th class="py-2 px-4 border-b">Producto</th>
-                        <th class="py-2 px-4 border-b">Cantidad</th>
-                        <th class="py-2 px-4 border-b">Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${invoices.map(invoice => `
-                        <tr>
-                            <td class="py-2 px-4 border-b">${new Date(invoice.date).toLocaleDateString()}</td>
-                            <td class="py-2 px-4 border-b">${invoice.productName}</td>
-                            <td class="py-2 px-4 border-b">${invoice.quantity}</td>
-                            <td class="py-2 px-4 border-b">$${invoice.totalPrice.toFixed(2)}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
         `;
     }
 
-    generateDetailedInventoryReport() {
+    generateInventoryReport() {
+        let totalValue = 0;
+        let lowStockItems = 0;
+
+        this.products.forEach(product => {
+            totalValue += product.price * product.quantity;
+            if (product.quantity < 10) lowStockItems++;
+        });
+
         return `
-            <h2 class="text-2xl font-bold mb-4">Reporte Detallado de Inventario</h2>
+            <h2 class="text-2xl font-bold mb-4">Informe de Inventario</h2>
             <p><strong>Total de Productos:</strong> ${this.products.length}</p>
-            <table class="min-w-full bg-white">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="py-2 px-4 border-b">ID</th>
-                        <th class="py-2 px-4 border-b">Nombre</th>
-                        <th class="py-2 px-4 border-b">Categoría</th>
-                        <th class="py-2 px-4 border-b">Precio</th>
-                        <th class="py-2 px-4 border-b">Cantidad</th>
-                        <th class="py-2 px-4 border-b">Valor Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${this.products.map(product => `
-                        <tr>
-                            <td class="py-2 px-4 border-b">${product.id}</td>
-                            <td class="py-2 px-4 border-b">${product.name}</td>
-                            <td class="py-2 px-4 border-b">${product.category}</td>
-                            <td class="py-2 px-4 border-b">$${product.price.toFixed(2)}</td>
-                            <td class="py-2 px-4 border-b">${product.quantity}</td>
-                            <td class="py-2 px-4 border-b">$${(product.price * product.quantity).toFixed(2)}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
+            <p><strong>Valor Total del Inventario:</strong> $${totalValue.toFixed(2)}</p>
+            <p><strong>Productos con Stock Bajo:</strong> ${lowStockItems}</p>
+            <h3 class="text-xl font-semibold mt-4 mb-2">Detalle de Productos:</h3>
+            <ul>
+                ${this.products.map(product => 
+                    `<li>${product.name}: ${product.quantity} unidades ($${product.price.toFixed(2)} c/u)</li>`).join('')}
+            </ul>
         `;
     }
 
-    generateDetailedFinancialReport(invoices) {
-        const totalSales = invoices.reduce((sum, invoice) => sum + invoice.totalPrice, 0);
-        const totalInventoryValue = this.products.reduce((sum, product) => sum + (product.price * product.quantity), 0);
-        const estimatedProfit = totalSales - totalInventoryValue;
+    generateIncomeReport(invoices) {
+        const incomeByDate = {};
+        let totalIncome = 0;
+
+        invoices.forEach(invoice => {
+            const date = new Date(invoice.date).toLocaleDateString();
+            incomeByDate[date] = (incomeByDate[date] || 0) + invoice.totalPrice;
+            totalIncome += invoice.totalPrice;
+        });
 
         return `
-            <h2 class="text-2xl font-bold mb-4">Reporte Financiero Detallado</h2>
-            <p><strong>Total de Ventas:</strong> $${totalSales.toFixed(2)}</p>
-            <p><strong>Valor del Inventario:</strong> $${totalInventoryValue.toFixed(2)}</p>
-            <p><strong>Beneficio Estimado:</strong> $${estimatedProfit.toFixed(2)}</p>
-            <h3 class="text-xl font-semibold mt-4 mb-2">Desglose de Ventas:</h3>
-            <table class="min-w-full bg-white">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="py-2 px-4 border-b">Fecha</th>
-                        <th class="py-2 px-4 border-b">Producto</th>
-                        <th class="py-2 px-4 border-b">Cantidad</th>
-                        <th class="py-2 px-4 border-b">Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${invoices.map(invoice => `
-                        <tr>
-                            <td class="py-2 px-4 border-b">${new Date(invoice.date).toLocaleDateString()}</td>
-                            <td class="py-2 px-4 border-b">${invoice.productName}</td>
-                            <td class="py-2 px-4 border-b">${invoice.quantity}</td>
-                            <td class="py-2 px-4 border-b">$${invoice.totalPrice.toFixed(2)}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
+            <h2 class="text-2xl font-bold mb-4">Informe de Ingresos</h2>
+            <p><strong>Ingreso Total:</strong> $${totalIncome.toFixed(2)}</p>
+            <h3 class="text-xl font-semibold mt-4 mb-2">Ingresos por Fecha:</h3>
+            <ul>
+                ${Object.entries(incomeByDate).map(([date, income]) => 
+                    `<li>${date}: $${income.toFixed(2)}</li>`).join('')}
+            </ul>
         `;
+    }
+
+    generateProfitReport(invoices) {
+        let totalRevenue = 0;
+        let totalCost = 0;
+
+        invoices.forEach(invoice => {
+            totalRevenue += invoice.totalPrice;
+            const product = this.products.find(p => p.id === invoice.productId);
+            if (product) {
+                totalCost += product.price * invoice.quantity;
+            }
+        });
+
+        const profit = totalRevenue - totalCost;
+
+        return `
+            <h2 class="text-2xl font-bold mb-4">Informe de Ganancias</h2>
+            <p><strong>Ingresos Totales:</strong> $${totalRevenue.toFixed(2)}</p>
+            <p><strong>Costos Totales:</strong> $${totalCost.toFixed(2)}</p>
+            <p><strong>Ganancia:</strong> $${profit.toFixed(2)}</p>
+            <p><strong>Margen de Ganancia:</strong> ${((profit / totalRevenue) * 100).toFixed(2)}%</p>
+        `;
+    }
+
+    generatePopularProductsReport(invoices) {
+        const productSales = {};
+        invoices.forEach(invoice => {
+            productSales[invoice.productName] = (productSales[invoice.productName] || 0) + invoice.quantity;
+        });
+
+        const sortedProducts = Object.entries(productSales).sort((a, b) => b[1] - a[1]);
+
+        return `
+            <h2 class="text-2xl font-bold mb-4">Informe de Productos Populares</h2>
+            <ol>
+                ${sortedProducts.map(([product, quantity], index) => 
+                    `<li>${index + 1}. ${product}: ${quantity} unidades vendidas</li>`).join('')}
+            </ol>
+        `;
+    }
+
+    displayReportContent(report) {
+        const reportContent = document.getElementById('report-content');
+        if (reportContent) {
+            reportContent.innerHTML = report.content;
+        }
+    }
+
+    saveReport(report) {
+        this.reports.push(report);
+        localStorage.setItem('reports', JSON.stringify(this.reports));
     }
 
     downloadReport() {
-        const reportContent = document.getElementById('report-content')?.innerText;
-        if (reportContent) {
-            const blob = new Blob([reportContent], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'reporte.txt';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        } else {
-            alert('No hay contenido de reporte para descargar.');
-        }
+        const reportContent = document.getElementById('report-content').innerText;
+        const blob = new Blob([reportContent], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'report.txt';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     }
 
     exportToCSV() {
-        const reportType = document.getElementById('report-type')?.value;
-        let data;
-        let filename;
-
-        switch (reportType) {
-            case 'sales':
-                data = this.prepareCSVData(this.invoices, ['id', 'productName', 'quantity', 'totalPrice', 'date']);
-                filename = 'reporte_ventas.csv';
-                break;
-            case 'inventory':
-                data = this.prepareCSVData(this.products, ['id', 'name', 'category', 'price', 'quantity']);
-                filename = 'reporte_inventario.csv';
-                break;
-            default:
-                alert('Seleccione un tipo de informe válido para exportar a CSV.');
-                return;
-        }
-
-        const csvContent = "data:text/csv;charset=utf-8," + data;
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", filename);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        const reportContent = document.getElementById('report-content').innerText;
+        const csv = this.convertToCSV(reportContent);
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'report.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
     }
 
-    prepareCSVData(dataArray, headers) {
-        const csvRows = [];
-        csvRows.push(headers.join(','));
-
-        for (const item of dataArray) {
-            const values = headers.map(header => {
-                const value = item[header];
-                return typeof value === 'string' ? `"${value}"` : value;
-            });
-            csvRows.push(values.join(','));
-        }
-
-        return csvRows.join('\n');
+    convertToCSV(reportContent) {
+        // This is a simple conversion. You might need to adjust this based on your report structure
+        return reportContent.split('\n').map(line => line.replace(/:/g, ',').trim()).join('\n');
     }
 
     printReport() {
@@ -419,82 +280,51 @@ class ReportManager {
         printWindow.document.write('<html><head><title>Reporte</title>');
         printWindow.document.write('<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">');
         printWindow.document.write('</head><body>');
-        printWindow.document.write(document.getElementById('report-content')?.innerHTML || '');
+        printWindow.document.write(document.getElementById('report-content').innerHTML);
         printWindow.document.write('</body></html>');
         printWindow.document.close();
         printWindow.print();
     }
 
-    getTopSellingProducts(limit = 5) {
-        const productSales = {};
-        this.invoices.forEach(invoice => {
-            productSales[invoice.productName] = (productSales[invoice.productName] || 0) + invoice.quantity;
-        });
-
-        return Object.entries(productSales)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, limit);
-    }
-
-    getLowStockProducts(threshold = 10) {
-        return this.products.filter(product => product.quantity <= threshold);
-    }
-
-    calculateRevenueGrowth() {
-        const salesByMonth = {};
-        this.invoices.forEach(invoice => {
-            const month = new Date(invoice.date).toLocaleString('default', { month: 'long', year: 'numeric' });
-            salesByMonth[month] = (salesByMonth[month] || 0) + invoice.totalPrice;
-        });
-
-        const sortedMonths = Object.keys(salesByMonth).sort((a, b) => new Date(a) - new Date(b));
-        const growth = [];
-
-        for (let i = 1; i < sortedMonths.length; i++) {
-            const previousMonth = sortedMonths[i - 1];
-            const currentMonth = sortedMonths[i];
-            const growthRate = ((salesByMonth[currentMonth] - salesByMonth[previousMonth]) / salesByMonth[previousMonth]) * 100;
-            growth.push({
-                month: currentMonth,
-                growthRate: growthRate.toFixed(2)
-            });
+    viewReport(id) {
+        const report = this.reports.find(r => r.id === parseInt(id));
+        if (report) {
+            document.getElementById('modal-informe-titulo').textContent = `Informe de ${report.type}`;
+            document.getElementById('modal-informe-contenido').innerHTML = report.content;
+            this.openModal();
         }
-
-        return growth;
     }
 
-    generatePerformanceReport() {
-        const topSellingProducts = this.getTopSellingProducts();
-        const lowStockProducts = this.getLowStockProducts();
-        const revenueGrowth = this.calculateRevenueGrowth();
-
-        const reportContent = `
-            <h2 class="text-2xl font-bold mb-4">Informe de Rendimiento</h2>
-            
-            <h3 class="text-xl font-semibold mt-4 mb-2">Top 5 Productos Más Vendidos:</h3>
-            <ul>
-                ${topSellingProducts.map(([product, quantity]) => `<li>${product}: ${quantity} unidades</li>`).join('')}
-            </ul>
-
-            <h3 class="text-xl font-semibold mt-4 mb-2">Productos con Stock Bajo:</h3>
-            <ul>
-                ${lowStockProducts.map(product => `<li>${product.name}: ${product.quantity} unidades</li>`).join('')}
-            </ul>
-
-            <h3 class="text-xl font-semibold mt-4 mb-2">Crecimiento de Ingresos:</h3>
-            <ul>
-                ${revenueGrowth.map(growth => `<li>${growth.month}: ${growth.growthRate}%</li>`).join('')}
-            </ul>
-        `;
-
-        const reportContentElement = document.getElementById('report-content');
-        if (reportContentElement) {
-            reportContentElement.innerHTML = reportContent;
+    downloadSpecificReport(id) {
+        const report = this.reports.find(r => r.id === parseInt(id));
+        if (report) {
+            const blob = new Blob([report.content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `report_${report.type}_${report.id}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
+    }
+
+    loadMoreReports() {
+        // Implement pagination or load more functionality here
+        console.log('Load more reports');
+    }
+
+    openModal() {
+        document.getElementById('modal-informe').style.display = 'block';
+    }
+
+    closeModal() {
+        document.getElementById('modal-informe').style.display = 'none';
     }
 }
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', () => {
-    const reportManager = new ReportManager();
+    new ReportManager();
 });

@@ -8,6 +8,42 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
     <link href="../css/styles.css" rel="stylesheet">
     <link rel="icon" href="../assets/favicon.ico" type="image/x-icon">
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            position: relative;
+            border-radius: 5px;
+        }
+        .modal-close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .modal-close:hover,
+        .modal-close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body class="bg-gray-100 flex flex-col min-h-screen">
     <header class="bg-blue-600 text-white shadow-md">
@@ -21,7 +57,7 @@
                 <a href="inventory.html" class="hover:text-blue-200 transition duration-300">Inventario</a>
                 <a href="reports.html" class="hover:text-blue-200 transition duration-300">Informes</a>
             </nav>
-            <button class="md:hidden focus:outline-none">
+            <button class="md:hidden focus:outline-none" id="menu-toggle">
                 <i class="fas fa-bars text-2xl"></i>
             </button>
         </div>
@@ -112,7 +148,7 @@
                     </select>
                 </div>
                 <div class="flex items-center justify-between">
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
+                    <button type="submit" id="generate-report-btn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
                         Generar Informe
                     </button>
                     <button type="button" id="btn-cancelar-informe" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
@@ -135,21 +171,32 @@
                 </div>
             </div>
         </section>
+
+        <section id="report-content" class="bg-white rounded-lg shadow-md p-8 mt-8">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-6">Contenido del Informe</h2>
+            <!-- El contenido del informe se insertará aquí dinámicamente -->
+        </section>
+
+        <div class="mt-8 flex justify-end space-x-4">
+            <button id="download-report-btn" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
+                Descargar Informe
+            </button>
+            <button id="print-report-btn" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
+                Imprimir Informe
+            </button>
+            <button id="export-csv-btn" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
+                Exportar a CSV
+            </button>
+        </div>
     </main>
 
-   
-
     <!-- Modal para visualizar informe -->
-    <div id="modal-informe" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
-        <div class="bg-white rounded-lg p-8 max-w-2xl w-full">
+    <div id="modal-informe" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
             <h2 id="modal-informe-titulo" class="text-2xl font-bold mb-4">Detalles del Informe</h2>
             <div id="modal-informe-contenido" class="mb-6">
                 <!-- El contenido del informe se insertará aquí dinámicamente -->
-            </div>
-            <div class="flex justify-end">
-                <button id="btn-cerrar-modal-informe" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
-                    Cerrar
-                </button>
             </div>
         </div>
     </div>
