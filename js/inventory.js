@@ -1,3 +1,4 @@
+// Clase Producto
 class Product {
     constructor(id, name, category, price, quantity, description = '') {
         this.id = id;
@@ -19,11 +20,32 @@ class InventoryManager {
         this.invoices = JSON.parse(localStorage.getItem('invoices')) || [];
         this.displayProducts();
         this.updateDashboard();
+        this.setupEventListeners();
+    }
+
+    setupEventListeners() {
+        document.getElementById('btn-agregar').addEventListener('click', () => this.showAddProductModal());
+        document.getElementById('form-producto').addEventListener('submit', (e) => this.handleProductSubmit(e));
+        document.getElementById('form-venta').addEventListener('submit', (e) => this.handleSaleSubmit(e));
+        document.querySelectorAll('.modal .close').forEach(button => {
+            button.addEventListener('click', () => this.closeModals());
+        });
+        document.getElementById('buscar-producto').addEventListener('input', () => this.filterProducts());
+        document.getElementById('filtrar-categoria').addEventListener('change', () => this.filterProducts());
+        document.getElementById('btn-exportar').addEventListener('click', () => this.exportToCSV());
+        document.getElementById('btn-importar').addEventListener('click', () => this.showImportModal());
     }
 
     addProduct(product) {
-        product.id = Date.now();
-        this.products.push(new Product(product.id, product.name, product.category, product.price, product.quantity, product.description));
+        const newProduct = new Product(
+            Date.now(),
+            product.name,
+            product.category,
+            product.price,
+            product.quantity,
+            product.description
+        );
+        this.products.push(newProduct);
         this.saveToLocalStorage();
         this.displayProducts();
         this.updateDashboard();
@@ -32,7 +54,14 @@ class InventoryManager {
     updateProduct(id, updatedProduct) {
         const index = this.products.findIndex(p => p.id === id);
         if (index !== -1) {
-            this.products[index] = { ...this.products[index], ...updatedProduct };
+            this.products[index] = new Product(
+                id,
+                updatedProduct.name,
+                updatedProduct.category,
+                updatedProduct.price,
+                updatedProduct.quantity,
+                updatedProduct.description
+            );
             this.saveToLocalStorage();
             this.displayProducts();
             this.updateDashboard();
@@ -79,6 +108,8 @@ class InventoryManager {
 
     displayProducts() {
         const tableBody = document.getElementById('tabla-inventario');
+        if (!tableBody) return;
+        
         tableBody.innerHTML = '';
         this.products.forEach(product => {
             const row = tableBody.insertRow();
@@ -96,10 +127,10 @@ class InventoryManager {
                 </td>
             `;
         });
-        this.attachEventListeners();
+        this.attachProductEventListeners();
     }
 
-    attachEventListeners() {
+    attachProductEventListeners() {
         document.querySelectorAll('.edit-btn').forEach(button => {
             button.addEventListener('click', (e) => this.showEditModal(e.target.dataset.id));
         });
@@ -109,6 +140,12 @@ class InventoryManager {
         document.querySelectorAll('.sale-btn').forEach(button => {
             button.addEventListener('click', (e) => this.showSaleModal(e.target.dataset.id));
         });
+    }
+
+    showAddProductModal() {
+        document.getElementById('form-producto').reset();
+        document.getElementById('producto-id').value = '';
+        document.getElementById('modal-producto').classList.remove('hidden');
     }
 
     showEditModal(id) {
@@ -136,11 +173,15 @@ class InventoryManager {
 
     confirmDelete(id) {
         const product = this.products.find(p => p.id === parseInt(id));
-        if (product) {
-            if (confirm(`¿Estás seguro de que quieres eliminar ${product.name}?`)) {
-                this.deleteProduct(parseInt(id));
-            }
+        if (product && confirm(`¿Estás seguro de que quieres eliminar ${product.name}?`)) {
+            this.deleteProduct(parseInt(id));
         }
+    }
+
+    closeModals() {
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.classList.add('hidden');
+        });
     }
 
     updateDashboard() {
@@ -155,12 +196,15 @@ class InventoryManager {
         document.getElementById('total-categorias').textContent = totalCategories;
     }
 
-    filterProducts(searchTerm, category) {
-        return this.products.filter(product => {
-            const matchSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+    filterProducts() {
+        const searchTerm = document.getElementById('buscar-producto').value.toLowerCase();
+        const category = document.getElementById('filtrar-categoria').value;
+        const filteredProducts = this.products.filter(product => {
+            const matchSearch = product.name.toLowerCase().includes(searchTerm);
             const matchCategory = category === '' || product.category === category;
             return matchSearch && matchCategory;
         });
+        this.displayProducts(filteredProducts);
     }
 
     exportToCSV() {
@@ -175,6 +219,14 @@ class InventoryManager {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    }
+
+    showImportModal() {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = '.csv';
+        fileInput.onchange = e => this.importFromCSV(e.target.files[0]);
+        fileInput.click();
     }
 
     importFromCSV(file) {
@@ -199,77 +251,39 @@ class InventoryManager {
         };
         reader.readAsText(file);
     }
+
+    handleProductSubmit(e) {
+        e.preventDefault();
+        const id = document.getElementById('producto-id').value;
+        const product = {
+            name: document.getElementById('producto-nombre').value,
+            category: document.getElementById('producto-categoria').value,
+            price: parseFloat(document.getElementById('producto-precio').value),
+            quantity: parseInt(document.getElementById('producto-cantidad').value),
+            description: document.getElementById('producto-descripcion').value
+        };
+        if (id) {
+            this.updateProduct(parseInt(id), product);
+        } else {
+            this.addProduct(product);
+        }
+        this.closeModals();
+    }
+
+    handleSaleSubmit(e) {
+        e.preventDefault();
+        const productId = parseInt(document.getElementById('venta-producto-id').value);
+        const quantity = parseInt(document.getElementById('venta-cantidad').value);
+        if (this.makeSale(productId, quantity)) {
+            alert('Venta realizada con éxito');
+        } else {
+            alert('No se pudo realizar la venta. Verifique la cantidad disponible.');
+        }
+        this.closeModals();
+    }
 }
 
-// Inicialización y manejo de eventos
-const inventoryManager = new InventoryManager();
-
-document.getElementById('btn-agregar').addEventListener('click', () => {
-    document.getElementById('form-producto').reset();
-    document.getElementById('modal-producto').classList.remove('hidden');
-});
-
-document.getElementById('form-producto').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const id = document.getElementById('producto-id').value;
-    const product = {
-        name: document.getElementById('producto-nombre').value,
-        category: document.getElementById('producto-categoria').value,
-        price: parseFloat(document.getElementById('producto-precio').value),
-        quantity: parseInt(document.getElementById('producto-cantidad').value),
-        description: document.getElementById('producto-descripcion').value
-    };
-    if (id) {
-        inventoryManager.updateProduct(parseInt(id), product);
-    } else {
-        inventoryManager.addProduct(product);
-    }
-    document.getElementById('modal-producto').classList.add('hidden');
-});
-
-document.getElementById('form-venta').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const productId = parseInt(document.getElementById('venta-producto-id').value);
-    const quantity = parseInt(document.getElementById('venta-cantidad').value);
-    if (inventoryManager.makeSale(productId, quantity)) {
-        alert('Venta realizada con éxito');
-    } else {
-        alert('No se pudo realizar la venta. Verifique la cantidad disponible.');
-    }
-    document.getElementById('modal-venta').classList.add('hidden');
-});
-
-document.querySelectorAll('.modal').forEach(modal => {
-    modal.querySelector('.close').addEventListener('click', () => {
-        modal.classList.add('hidden');
-    });
-});
-
-document.getElementById('buscar-producto').addEventListener('input', (e) => {
-    const searchTerm = e.target.value;
-    const category = document.getElementById('filtrar-categoria').value;
-    const filteredProducts = inventoryManager.filterProducts(searchTerm, category);
-    inventoryManager.displayProducts(filteredProducts);
-});
-
-document.getElementById('filtrar-categoria').addEventListener('change', (e) => {
-    const category = e.target.value;
-    const searchTerm = document.getElementById('buscar-producto').value;
-    const filteredProducts = inventoryManager.filterProducts(searchTerm, category);
-    inventoryManager.displayProducts(filteredProducts);
-});
-
-document.getElementById('btn-exportar').addEventListener('click', () => {
-    inventoryManager.exportToCSV();
-});
-
-document.getElementById('btn-importar').addEventListener('click', () => {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = '.csv';
-    fileInput.onchange = e => {
-        const file = e.target.files[0];
-        inventoryManager.importFromCSV(file);
-    };
-    fileInput.click();
+// Inicialización
+document.addEventListener('DOMContentLoaded', () => {
+    new InventoryManager();
 });

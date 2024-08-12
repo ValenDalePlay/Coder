@@ -45,7 +45,7 @@
                         <h3 class="text-lg font-semibold text-gray-700">Valor Total</h3>
                         <i class="fas fa-dollar-sign text-3xl text-green-500"></i>
                     </div>
-                    <p id="valor-total" class="text-3xl font-bold mt-4">$0.00</p>
+                    <p id="valor-inventario" class="text-3xl font-bold mt-4">$0.00</p>
                 </div>
                 <div class="bg-white rounded-lg shadow-md p-6 transition duration-300 hover:shadow-lg">
                     <div class="flex items-center justify-between">
@@ -117,8 +117,6 @@
         </section>
     </main>
 
-    
-
     <!-- Modal para agregar/editar producto -->
     <div id="modal-producto" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
         <div class="bg-white rounded-lg p-8 max-w-md w-full">
@@ -131,51 +129,58 @@
                 </div>
                 <div class="mb-4">
                     <label for="producto-categoria" class="block text-gray-700 text-sm font-bold mb-2">Categoría:</label>
-                    <select id="producto-categoria" name="categoria" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
-                        <option value="">Seleccione una categoría</option>
-                        <option value="electronica">Electrónica</option>
-                        <option value="hogar">Hogar</option>
-                        <option value="moda">Moda</option>
-                        <option value="deportes">Deportes</option>
-                    </select>
+                    <input type="text" id="producto-categoria" name="categoria" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
                 </div>
                 <div class="mb-4">
                     <label for="producto-precio" class="block text-gray-700 text-sm font-bold mb-2">Precio:</label>
-                    <input type="number" id="producto-precio" name="precio" step="0.01" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                    <input type="number" id="producto-precio" name="precio" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
                 </div>
                 <div class="mb-4">
                     <label for="producto-cantidad" class="block text-gray-700 text-sm font-bold mb-2">Cantidad:</label>
                     <input type="number" id="producto-cantidad" name="cantidad" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
                 </div>
-                <div class="mb-6">
-                    <label for="producto-descripcion" class="block text-gray-700 text-sm font-bold mb-2">Descripción:</label>
-                    <textarea id="producto-descripcion" name="descripcion" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="3"></textarea>
-                </div>
-                <div class="flex items-center justify-between">
-                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
-                        Guardar
-                    </button>
-                    <button type="button" id="cerrar-modal-producto" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
-                        Cancelar
-                    </button>
+                <div class="flex justify-end">
+                    <button type="button" id="btn-cerrar-modal" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-2">Cerrar</button>
+                    <button type="submit" id="btn-guardar" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Guardar</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Modal de confirmación para eliminar producto -->
-    <div id="modal-confirmar-eliminar" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
+    <!-- Modal para importar productos -->
+    <div id="modal-importar" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
         <div class="bg-white rounded-lg p-8 max-w-md w-full">
-            <h2 class="text-2xl font-bold mb-4">Confirmar Eliminación</h2>
-            <p class="mb-6">¿Estás seguro de que deseas eliminar este producto? Esta acción no se puede deshacer.</p>
-            <div class="flex justify-end space-x-4">
-                <button id="confirmar-eliminar" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
-                    Eliminar
-                </button>
-                <button id="cancelar-eliminar" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
-                    Cancelar
-                </button>
-            </div>
+            <h2 class="text-2xl font-bold mb-4">Importar Productos</h2>
+            <form id="form-importar">
+                <div class="mb-4">
+                    <label for="archivo-importar" class="block text-gray-700 text-sm font-bold mb-2">Seleccionar Archivo:</label>
+                    <input type="file" id="archivo-importar" name="archivo" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" accept=".csv, .xlsx" required>
+                </div>
+                <div class="flex justify-end">
+                    <button type="button" id="btn-cerrar-importar" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-2">Cerrar</button>
+                    <button type="submit" id="btn-importar" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Importar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal para exportar productos -->
+    <div id="modal-exportar" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full">
+            <h2 class="text-2xl font-bold mb-4">Exportar Productos</h2>
+            <form id="form-exportar">
+                <div class="mb-4">
+                    <label for="exportar-tipo" class="block text-gray-700 text-sm font-bold mb-2">Formato:</label>
+                    <select id="exportar-tipo" name="tipo" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <option value="csv">CSV</option>
+                        <option value="xlsx">XLSX</option>
+                    </select>
+                </div>
+                <div class="flex justify-end">
+                    <button type="button" id="btn-cerrar-exportar" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-2">Cerrar</button>
+                    <button type="submit" id="btn-exportar" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">Exportar</button>
+                </div>
+            </form>
         </div>
     </div>
 

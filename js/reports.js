@@ -7,10 +7,19 @@ class ReportManager {
     }
 
     setupEventListeners() {
-        document.getElementById('generate-report-btn').addEventListener('click', () => this.generateReport());
-        document.getElementById('download-report-btn').addEventListener('click', () => this.downloadReport());
-        document.getElementById('export-csv-btn').addEventListener('click', () => this.exportToCSV());
-        document.getElementById('refresh-data-btn').addEventListener('click', () => this.refreshData());
+        const generateReportBtn = document.getElementById('generate-report-btn');
+        const downloadReportBtn = document.getElementById('download-report-btn');
+        const exportCsvBtn = document.getElementById('export-csv-btn');
+        const refreshDataBtn = document.getElementById('refresh-data-btn');
+        const printReportBtn = document.getElementById('print-report-btn');
+        const performanceReportBtn = document.getElementById('performance-report-btn');
+
+        if (generateReportBtn) generateReportBtn.addEventListener('click', () => this.generateReport());
+        if (downloadReportBtn) downloadReportBtn.addEventListener('click', () => this.downloadReport());
+        if (exportCsvBtn) exportCsvBtn.addEventListener('click', () => this.exportToCSV());
+        if (refreshDataBtn) refreshDataBtn.addEventListener('click', () => this.refreshData());
+        if (printReportBtn) printReportBtn.addEventListener('click', () => this.printReport());
+        if (performanceReportBtn) performanceReportBtn.addEventListener('click', () => this.generatePerformanceReport());
     }
 
     refreshData() {
@@ -85,39 +94,48 @@ class ReportManager {
     }
 
     displayInventorySummary(report) {
-        document.getElementById('inventory-summary').innerHTML = `
-            <h3 class="text-xl font-semibold mb-2">Resumen de Inventario</h3>
-            <p>Total de Productos: ${report.totalProducts}</p>
-            <p>Valor Total del Inventario: $${report.totalValue}</p>
-            <p>Productos con Stock Bajo: ${report.lowStockItems}</p>
-            <h4 class="text-lg font-semibold mt-2 mb-1">Productos por Categoría:</h4>
-            <ul>
-                ${Object.entries(report.categoryCounts).map(([category, count]) => 
-                    `<li>${category}: ${count}</li>`).join('')}
-            </ul>
-        `;
+        const inventorySummary = document.getElementById('inventory-summary');
+        if (inventorySummary) {
+            inventorySummary.innerHTML = `
+                <h3 class="text-xl font-semibold mb-2">Resumen de Inventario</h3>
+                <p>Total de Productos: ${report.totalProducts}</p>
+                <p>Valor Total del Inventario: $${report.totalValue}</p>
+                <p>Productos con Stock Bajo: ${report.lowStockItems}</p>
+                <h4 class="text-lg font-semibold mt-2 mb-1">Productos por Categoría:</h4>
+                <ul>
+                    ${Object.entries(report.categoryCounts).map(([category, count]) => 
+                        `<li>${category}: ${count}</li>`).join('')}
+                </ul>
+            `;
+        }
     }
 
     displaySalesSummary(report) {
-        document.getElementById('sales-summary').innerHTML = `
-            <h3 class="text-xl font-semibold mb-2">Resumen de Ventas</h3>
-            <p>Total de Ventas: $${report.totalSales}</p>
-            <p>Total de Artículos Vendidos: ${report.totalItems}</p>
-            <h4 class="text-lg font-semibold mt-2 mb-1">Ventas por Producto:</h4>
-            <ul>
-                ${Object.entries(report.salesByProduct).map(([product, quantity]) => 
-                    `<li>${product}: ${quantity}</li>`).join('')}
-            </ul>
-        `;
+        const salesSummary = document.getElementById('sales-summary');
+        if (salesSummary) {
+            salesSummary.innerHTML = `
+                <h3 class="text-xl font-semibold mb-2">Resumen de Ventas</h3>
+                <p>Total de Ventas: $${report.totalSales}</p>
+                <p>Total de Artículos Vendidos: ${report.totalItems}</p>
+                <h4 class="text-lg font-semibold mt-2 mb-1">Ventas por Producto:</h4>
+                <ul>
+                    ${Object.entries(report.salesByProduct).map(([product, quantity]) => 
+                        `<li>${product}: ${quantity}</li>`).join('')}
+                </ul>
+            `;
+        }
     }
 
     displayFinancialSummary(summary) {
-        document.getElementById('financial-summary').innerHTML = `
-            <h3 class="text-xl font-semibold mb-2">Resumen Financiero</h3>
-            <p>Valor Total del Inventario: $${summary.totalInventoryValue}</p>
-            <p>Total de Ventas: $${summary.totalSales}</p>
-            <p>Beneficio Estimado: $${summary.estimatedProfit}</p>
-        `;
+        const financialSummary = document.getElementById('financial-summary');
+        if (financialSummary) {
+            financialSummary.innerHTML = `
+                <h3 class="text-xl font-semibold mb-2">Resumen Financiero</h3>
+                <p>Valor Total del Inventario: $${summary.totalInventoryValue}</p>
+                <p>Total de Ventas: $${summary.totalSales}</p>
+                <p>Beneficio Estimado: $${summary.estimatedProfit}</p>
+            `;
+        }
     }
 
     createCharts(inventoryReport, salesReport) {
@@ -126,73 +144,82 @@ class ReportManager {
     }
 
     createInventoryChart(report) {
-        const ctx = document.getElementById('inventory-chart').getContext('2d');
-        if (window.inventoryChart) window.inventoryChart.destroy();
-        window.inventoryChart = new Chart(ctx, {
-            type: 'pie',
-            data: {
-                labels: Object.keys(report.categoryCounts),
-                datasets: [{
-                    data: Object.values(report.categoryCounts),
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.8)',
-                        'rgba(54, 162, 235, 0.8)',
-                        'rgba(255, 206, 86, 0.8)',
-                        'rgba(75, 192, 192, 0.8)',
-                        'rgba(153, 102, 255, 0.8)'
-                    ]
-                }]
-            },
-            options: {
-                responsive: true,
-                title: {
-                    display: true,
-                    text: 'Distribución de Productos por Categoría'
+        const ctx = document.getElementById('inventory-chart');
+        if (ctx) {
+            if (window.inventoryChart) window.inventoryChart.destroy();
+            window.inventoryChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(report.categoryCounts),
+                    datasets: [{
+                        data: Object.values(report.categoryCounts),
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 206, 86, 0.8)',
+                            'rgba(75, 192, 192, 0.8)',
+                            'rgba(153, 102, 255, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    title: {
+                        display: true,
+                        text: 'Distribución de Productos por Categoría'
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     createSalesChart(report) {
-        const ctx = document.getElementById('sales-chart').getContext('2d');
-        const dates = Object.keys(report.salesByDate).sort((a, b) => new Date(a) - new Date(b));
-        const sales = dates.map(date => report.salesByDate[date]);
+        const ctx = document.getElementById('sales-chart');
+        if (ctx) {
+            const dates = Object.keys(report.salesByDate).sort((a, b) => new Date(a) - new Date(b));
+            const sales = dates.map(date => report.salesByDate[date]);
 
-        if (window.salesChart) window.salesChart.destroy();
-        window.salesChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: dates,
-                datasets: [{
-                    label: 'Ventas Diarias',
-                    data: sales,
-                    borderColor: 'rgb(75, 192, 192)',
-                    tension: 0.1
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: 'Ventas ($)'
-                        }
-                    }
+            if (window.salesChart) window.salesChart.destroy();
+            window.salesChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Ventas Diarias',
+                        data: sales,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1
+                    }]
                 },
-                title: {
-                    display: true,
-                    text: 'Tendencia de Ventas'
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Ventas ($)'
+                            }
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Tendencia de Ventas'
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     generateReport() {
-        const startDate = document.getElementById('start-date').value;
-        const endDate = document.getElementById('end-date').value;
-        const reportType = document.getElementById('report-type').value;
+        const startDate = document.getElementById('start-date')?.value;
+        const endDate = document.getElementById('end-date')?.value;
+        const reportType = document.getElementById('report-type')?.value;
+
+        if (!startDate || !endDate || !reportType) {
+            alert('Por favor, seleccione fechas y tipo de reporte.');
+            return;
+        }
 
         const filteredInvoices = this.invoices.filter(invoice => {
             const invoiceDate = new Date(invoice.date);
@@ -210,9 +237,14 @@ class ReportManager {
             case 'financial':
                 reportContent = this.generateDetailedFinancialReport(filteredInvoices);
                 break;
+            default:
+                reportContent = '<p>Tipo de reporte no válido</p>';
         }
 
-        document.getElementById('report-content').innerHTML = reportContent;
+        const reportContentElement = document.getElementById('report-content');
+        if (reportContentElement) {
+            reportContentElement.innerHTML = reportContent;
+        }
     }
 
     generateDetailedSalesReport(invoices) {
@@ -322,20 +354,24 @@ class ReportManager {
     }
 
     downloadReport() {
-        const reportContent = document.getElementById('report-content').innerText;
-        const blob = new Blob([reportContent], { type: 'text/plain' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'reporte.txt';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        const reportContent = document.getElementById('report-content')?.innerText;
+        if (reportContent) {
+            const blob = new Blob([reportContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'reporte.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } else {
+            alert('No hay contenido de reporte para descargar.');
+        }
     }
 
     exportToCSV() {
-        const reportType = document.getElementById('report-type').value;
+        const reportType = document.getElementById('report-type')?.value;
         let data;
         let filename;
 
@@ -383,7 +419,7 @@ class ReportManager {
         printWindow.document.write('<html><head><title>Reporte</title>');
         printWindow.document.write('<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">');
         printWindow.document.write('</head><body>');
-        printWindow.document.write(document.getElementById('report-content').innerHTML);
+        printWindow.document.write(document.getElementById('report-content')?.innerHTML || '');
         printWindow.document.write('</body></html>');
         printWindow.document.close();
         printWindow.print();
@@ -451,15 +487,14 @@ class ReportManager {
             </ul>
         `;
 
-        document.getElementById('report-content').innerHTML = reportContent;
+        const reportContentElement = document.getElementById('report-content');
+        if (reportContentElement) {
+            reportContentElement.innerHTML = reportContent;
+        }
     }
 }
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', () => {
     const reportManager = new ReportManager();
-
-    // Eventos adicionales
-    document.getElementById('print-report-btn').addEventListener('click', () => reportManager.printReport());
-    document.getElementById('performance-report-btn').addEventListener('click', () => reportManager.generatePerformanceReport());
 });
