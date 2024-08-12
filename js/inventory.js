@@ -34,8 +34,15 @@ class InventoryManager {
         document.getElementById('form-venta')?.addEventListener('submit', (e) => this.handleSaleSubmit(e));
 
         // Cerrar modales
-        document.querySelectorAll('.close').forEach(button => {
+        document.querySelectorAll('.modal .close').forEach(button => {
             button.addEventListener('click', () => this.closeModals());
+        });
+
+        // Cerrar modales al hacer clic fuera de ellos
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                this.closeModals();
+            }
         });
 
         // Filtrado y búsqueda
@@ -151,7 +158,7 @@ class InventoryManager {
         document.getElementById('form-producto').reset();
         document.getElementById('producto-id').value = '';
         document.getElementById('modal-titulo').textContent = 'Agregar Producto';
-        document.getElementById('modal-producto').classList.remove('hidden');
+        this.showModal('modal-producto');
     }
 
     showEditModal(id) {
@@ -164,7 +171,7 @@ class InventoryManager {
             document.getElementById('producto-cantidad').value = product.quantity;
             document.getElementById('producto-descripcion').value = product.description;
             document.getElementById('modal-titulo').textContent = 'Editar Producto';
-            document.getElementById('modal-producto').classList.remove('hidden');
+            this.showModal('modal-producto');
         }
     }
 
@@ -174,8 +181,22 @@ class InventoryManager {
             document.getElementById('venta-producto-id').value = product.id;
             document.getElementById('venta-producto-nombre').textContent = product.name;
             document.getElementById('venta-cantidad').max = product.quantity;
-            document.getElementById('modal-venta').classList.remove('hidden');
+            document.getElementById('venta-cantidad').value = 1;
+            this.showModal('modal-venta');
         }
+    }
+
+    showModal(modalId) {
+        const modal = document.getElementById(modalId);
+        modal.style.display = 'flex';
+        modal.style.alignItems = 'center';
+        modal.style.justifyContent = 'center';
+    }
+
+    closeModals() {
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.style.display = 'none';
+        });
     }
 
     confirmDelete(id) {
@@ -183,12 +204,6 @@ class InventoryManager {
         if (product && confirm(`¿Estás seguro de que quieres eliminar ${product.name}?`)) {
             this.deleteProduct(parseInt(id));
         }
-    }
-
-    closeModals() {
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.classList.add('hidden');
-        });
     }
 
     updateDashboard() {
