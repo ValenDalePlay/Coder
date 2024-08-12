@@ -8,6 +8,42 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
     <link href="../css/styles.css" rel="stylesheet">
     <link rel="icon" href="../assets/favicon.ico" type="image/x-icon">
+    <style>
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            position: relative;
+            border-radius: 5px;
+        }
+        .modal-close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .modal-close:hover,
+        .modal-close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body class="bg-gray-100 flex flex-col min-h-screen">
     <header class="bg-blue-600 text-white shadow-md">
@@ -118,8 +154,9 @@
     </main>
 
     <!-- Modal para agregar/editar producto -->
-    <div id="modal-producto" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
-        <div class="bg-white rounded-lg p-8 max-w-md w-full">
+    <div id="modal-producto" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
             <h2 id="modal-titulo" class="text-2xl font-bold mb-4">Agregar Producto</h2>
             <form id="form-producto">
                 <input type="hidden" id="producto-id">
@@ -144,7 +181,6 @@
                     <textarea id="producto-descripcion" name="descripcion" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" rows="3"></textarea>
                 </div>
                 <div class="flex justify-end">
-                    <button type="button" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-2 close">Cerrar</button>
                     <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Guardar</button>
                 </div>
             </form>
@@ -152,8 +188,9 @@
     </div>
 
     <!-- Modal para realizar venta -->
-    <div id="modal-venta" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
-        <div class="bg-white rounded-lg p-8 max-w-md w-full">
+    <div id="modal-venta" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
             <h2 class="text-2xl font-bold mb-4">Realizar Venta</h2>
             <form id="form-venta">
                 <input type="hidden" id="venta-producto-id">
@@ -166,7 +203,6 @@
                     <input type="number" id="venta-cantidad" name="cantidad" min="1" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
                 </div>
                 <div class="flex justify-end">
-                    <button type="button" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-2 close">Cancelar</button>
                     <button type="submit" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Vender</button>
                 </div>
             </form>
