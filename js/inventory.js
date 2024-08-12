@@ -34,15 +34,17 @@ class InventoryManager {
         document.getElementById('form-venta')?.addEventListener('submit', (e) => this.handleSaleSubmit(e));
 
         // Cerrar modales
-        document.querySelectorAll('.modal .close').forEach(button => {
+        document.querySelectorAll('.modal-close').forEach(button => {
             button.addEventListener('click', () => this.closeModals());
         });
 
         // Cerrar modales al hacer clic fuera de ellos
-        window.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal')) {
-                this.closeModals();
-            }
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    this.closeModals();
+                }
+            });
         });
 
         // Filtrado y búsqueda
@@ -188,9 +190,7 @@ class InventoryManager {
 
     showModal(modalId) {
         const modal = document.getElementById(modalId);
-        modal.style.display = 'flex';
-        modal.style.alignItems = 'center';
-        modal.style.justifyContent = 'center';
+        modal.style.display = 'block';
     }
 
     closeModals() {
