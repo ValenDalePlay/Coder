@@ -18,40 +18,35 @@ class InventoryManager {
         this.products = JSON.parse(localStorage.getItem('products')) || [];
         this.products = this.products.map(p => new Product(p.id, p.name, p.category, p.price, p.quantity, p.description));
         this.invoices = JSON.parse(localStorage.getItem('invoices')) || [];
+        this.categories = ['Electrónica', 'Hogar', 'Moda', 'Deportes', 'Libros']; // Definir las categorías
         this.setupEventListeners();
+        this.setupCategories();
         this.displayProducts();
         this.updateDashboard();
     }
 
     setupEventListeners() {
-        // Botones principales
         document.getElementById('btn-agregar')?.addEventListener('click', () => this.showAddProductModal());
         document.getElementById('btn-importar')?.addEventListener('click', () => this.showImportModal());
         document.getElementById('btn-exportar')?.addEventListener('click', () => this.exportToCSV());
-
-        // Formularios
         document.getElementById('form-producto')?.addEventListener('submit', (e) => this.handleProductSubmit(e));
         document.getElementById('form-venta')?.addEventListener('submit', (e) => this.handleSaleSubmit(e));
-
-        // Cerrar modales
-        document.querySelectorAll('.modal-close').forEach(button => {
-            button.addEventListener('click', () => this.closeModals());
+        
+        document.querySelectorAll('.modal-close').forEach(closeBtn => {
+            closeBtn.addEventListener('click', () => this.closeModal(closeBtn.closest('.modal')));
         });
 
-        // Cerrar modales al hacer clic fuera de ellos
         document.querySelectorAll('.modal').forEach(modal => {
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
-                    this.closeModals();
+                    this.closeModal(modal);
                 }
             });
         });
 
-        // Filtrado y búsqueda
         document.getElementById('buscar-producto')?.addEventListener('input', () => this.filterProducts());
         document.getElementById('filtrar-categoria')?.addEventListener('change', () => this.filterProducts());
 
-        // Delegación de eventos para botones dinámicos
         document.getElementById('tabla-inventario')?.addEventListener('click', (e) => {
             if (e.target.classList.contains('edit-btn')) {
                 this.showEditModal(e.target.dataset.id);
@@ -60,6 +55,19 @@ class InventoryManager {
             } else if (e.target.classList.contains('sale-btn')) {
                 this.showSaleModal(e.target.dataset.id);
             }
+        });
+    }
+
+    setupCategories() {
+        const categoryDropdowns = document.querySelectorAll('#producto-categoria, #filtrar-categoria');
+        categoryDropdowns.forEach(dropdown => {
+            dropdown.innerHTML = '<option value="">Todas las categorías</option>';
+            this.categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.toLowerCase();
+                option.textContent = category;
+                dropdown.appendChild(option);
+            });
         });
     }
 
@@ -193,10 +201,8 @@ class InventoryManager {
         modal.style.display = 'block';
     }
 
-    closeModals() {
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.style.display = 'none';
-        });
+    closeModal(modal) {
+        modal.style.display = 'none';
     }
 
     confirmDelete(id) {
@@ -220,10 +226,10 @@ class InventoryManager {
 
     filterProducts() {
         const searchTerm = document.getElementById('buscar-producto').value.toLowerCase();
-        const category = document.getElementById('filtrar-categoria').value;
+        const category = document.getElementById('filtrar-categoria').value.toLowerCase();
         const filteredProducts = this.products.filter(product => {
             const matchSearch = product.name.toLowerCase().includes(searchTerm);
-            const matchCategory = category === '' || product.category === category;
+            const matchCategory = category === '' || product.category.toLowerCase() === category;
             return matchSearch && matchCategory;
         });
         this.displayFilteredProducts(filteredProducts);
@@ -312,7 +318,7 @@ class InventoryManager {
         } else {
             this.addProduct(product);
         }
-        this.closeModals();
+        this.closeModal(document.getElementById('modal-producto'));
     }
 
     handleSaleSubmit(e) {
@@ -324,7 +330,7 @@ class InventoryManager {
         } else {
             alert('No se pudo realizar la venta. Verifique la cantidad disponible.');
         }
-        this.closeModals();
+        this.closeModal(document.getElementById('modal-venta'));
     }
 }
 
