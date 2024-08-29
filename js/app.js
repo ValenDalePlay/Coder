@@ -39,6 +39,7 @@ class InventoryManager {
         document.getElementById('filtrar-categoria')?.addEventListener('change', () => this.filterProducts());
         document.getElementById('btn-exportar')?.addEventListener('click', () => this.exportToCSV());
         document.getElementById('btn-importar')?.addEventListener('click', () => this.showImportModal());
+        document.getElementById('btn-inventario')?.addEventListener('click', () => this.updateIndexPage());
     }
 
     addProduct(product) {
@@ -51,11 +52,10 @@ class InventoryManager {
             product.description
         );
         this.products.push(newProduct);
-        this.saveToLocalStorage();
+        this.updateIndexPageOnProductChange();
         this.displayProducts();
         this.updateDashboard();
     }
-
     updateProduct(id, updatedProduct) {
         const index = this.products.findIndex(p => p.id === id);
         if (index !== -1) {
@@ -67,7 +67,7 @@ class InventoryManager {
                 updatedProduct.quantity,
                 updatedProduct.description
             );
-            this.saveToLocalStorage();
+            this.updateIndexPageOnProductChange();
             this.displayProducts();
             this.updateDashboard();
         }
@@ -84,7 +84,7 @@ class InventoryManager {
         const product = this.products.find(p => p.id === productId);
         if (product && product.quantity >= quantity) {
             product.quantity -= quantity;
-            this.saveToLocalStorage();
+            this.updateIndexPageOnSale();
             this.displayProducts();
             this.createInvoice(product, quantity);
             this.updateDashboard();
@@ -187,6 +187,15 @@ class InventoryManager {
         document.querySelectorAll('.modal').forEach(modal => {
             modal.classList.add('hidden');
         });
+    }
+    updateIndexPageOnProductChange() {
+        this.updateIndexPage();
+        this.saveToLocalStorage();
+    }
+    
+    updateIndexPageOnSale() {
+        this.updateIndexPage();
+        this.saveToLocalStorage();
     }
 
     updateDashboard() {
