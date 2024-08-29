@@ -3,6 +3,7 @@ class ReportManager {
         this.products = JSON.parse(localStorage.getItem('products')) || [];
         this.invoices = JSON.parse(localStorage.getItem('invoices')) || [];
         this.reports = JSON.parse(localStorage.getItem('reports')) || [];
+        this.currentReport = null; // Almacena el informe actual que se está visualizando
         this.setupEventListeners();
         this.displayReports();
         this.updateDashboard();
@@ -10,9 +11,9 @@ class ReportManager {
 
     setupEventListeners() {
         document.getElementById('generate-report-btn')?.addEventListener('click', (e) => this.handleGenerateReport(e));
-        document.getElementById('download-report-btn')?.addEventListener('click', () => this.downloadReport());
-        document.getElementById('export-csv-btn')?.addEventListener('click', () => this.exportToCSV());
-        document.getElementById('print-report-btn')?.addEventListener('click', () => this.printReport());
+        document.getElementById('download-report-btn')?.addEventListener('click', () => this.downloadReport(this.currentReport));
+        document.getElementById('export-csv-btn')?.addEventListener('click', () => this.downloadReport(this.currentReport));
+        document.getElementById('print-report-btn')?.addEventListener('click', () => this.printReport(this.currentReport));
         document.getElementById('btn-cargar-mas')?.addEventListener('click', () => this.loadMoreReports());
 
         // Modal close button
@@ -77,26 +78,21 @@ class ReportManager {
         const startDate = document.getElementById('fecha-inicio').value;
         const endDate = document.getElementById('fecha-fin').value;
         const format = document.getElementById('formato-informe').value;
-
-        if (!type || !startDate || !endDate || !format) {
-            alert('Por favor, complete todos los campos.');
-            return;
-        }
-
-        const report = this.generateReport(type, startDate, endDate);
+    
+        const report = this.generateReport(type, startDate, endDate, format);
         this.displayReportContent(report);
         this.saveReport(report);
         this.updateDashboard();
         this.displayReports();
     }
 
-    generateReport(type, startDate, endDate) {
+    generateReport(type, startDate, endDate, format) {
         // Filtrar las facturas por fecha
         const filteredInvoices = this.invoices.filter(invoice => {
             const invoiceDate = new Date(invoice.date);
             return invoiceDate >= new Date(startDate) && invoiceDate <= new Date(endDate);
         });
-
+    
         let reportContent = '';
         switch (type) {
             case 'ventas':
@@ -117,14 +113,15 @@ class ReportManager {
             default:
                 reportContent = 'Tipo de informe no válido';
         }
-
+    
         return {
             id: Date.now(),
             type: type,
             date: new Date().toISOString(),
             content: reportContent,
             startDate: startDate,
-            endDate: endDate
+            endDate: endDate,
+            format: format
         };
     }
 
@@ -173,13 +170,13 @@ class ReportManager {
     generateIncomeReport(invoices) {
         const incomeByDate = {};
         let totalIncome = 0;
-
+    
         invoices.forEach(invoice => {
             const date = new Date(invoice.date).toLocaleDateString();
             incomeByDate[date] = (incomeByDate[date] || 0) + invoice.totalPrice;
             totalIncome += invoice.totalPrice;
         });
-
+    
         return `
             <h2 class="text-2xl font-bold mb-4">Informe de Ingresos</h2>
             <p><strong>Ingreso Total:</strong> $${totalIncome.toFixed(2)}</p>
@@ -190,11 +187,11 @@ class ReportManager {
             </ul>
         `;
     }
-
+    
     generateProfitReport(invoices) {
         let totalRevenue = 0;
         let totalCost = 0;
-
+    
         invoices.forEach(invoice => {
             totalRevenue += invoice.totalPrice;
             const product = this.products.find(p => p.id === invoice.productId);
@@ -202,9 +199,9 @@ class ReportManager {
                 totalCost += product.price * invoice.quantity;
             }
         });
-
+    
         const profit = totalRevenue - totalCost;
-
+    
         return `
             <h2 class="text-2xl font-bold mb-4">Informe de Ganancias</h2>
             <p><strong>Ingresos Totales:</strong> $${totalRevenue.toFixed(2)}</p>
@@ -213,15 +210,15 @@ class ReportManager {
             <p><strong>Margen de Ganancia:</strong> ${((profit / totalRevenue) * 100).toFixed(2)}%</p>
         `;
     }
-
+    
     generatePopularProductsReport(invoices) {
         const productSales = {};
         invoices.forEach(invoice => {
             productSales[invoice.productName] = (productSales[invoice.productName] || 0) + invoice.quantity;
         });
-
+    
         const sortedProducts = Object.entries(productSales).sort((a, b) => b[1] - a[1]);
-
+    
         return `
             <h2 class="text-2xl font-bold mb-4">Informe de Productos Populares</h2>
             <ol>
@@ -230,32 +227,62 @@ class ReportManager {
             </ol>
         `;
     }
-
+    
     displayReportContent(report) {
         const reportContent = document.getElementById('report-content');
         if (reportContent) {
             reportContent.innerHTML = report.content;
         }
     }
-
+    
     saveReport(report) {
         this.reports.push(report);
         localStorage.setItem('reports', JSON.stringify(this.reports));
     }
-
-    downloadReport() {
-        const reportContent = document.getElementById('report-content').innerText;
-        const blob = new Blob([reportContent], { type: 'text/plain' });
+    
+    downloadReport(report) {
+        switch (report.format) {
+            case 'pdf':
+                this.downloadPDF(report.content);
+                break;
+            case 'excel':
+                this.downloadExcel(report.content);
+                break;
+            case 'csv':
+                this.downloadCSV(report.content);
+                break;
+        }
+    }
+    
+    downloadPDF(reportContent) {
+        // Implementación para generar y descargar el informe en formato PDF
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        doc.setFontSize(12);
+        doc.text(reportContent, 10, 10);
+        doc.save('report.pdf');
+    }
+    
+    downloadExcel(reportContent) {
+        // Implementación para generar y descargar el informe en formato Excel
+        const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.aoa_to_sheet(reportContent.split('\n').map(line => line.split(',')));
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+        XLSX.writeFile(workbook, 'report.xlsx');
+    }
+    
+    downloadCSV(reportContent) {
+        const blob = new Blob([reportContent], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'report.txt';
+        a.download = 'report.csv';
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     }
-
+    
     exportToCSV() {
         const reportContent = document.getElementById('report-content').innerText;
         const csv = this.convertToCSV(reportContent);
@@ -269,32 +296,33 @@ class ReportManager {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     }
-
+    
     convertToCSV(reportContent) {
         // This is a simple conversion. You might need to adjust this based on your report structure
         return reportContent.split('\n').map(line => line.replace(/:/g, ',').trim()).join('\n');
     }
-
-    printReport() {
+    
+    printReport(report) {
         const printWindow = window.open('', '_blank');
         printWindow.document.write('<html><head><title>Reporte</title>');
         printWindow.document.write('<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">');
         printWindow.document.write('</head><body>');
-        printWindow.document.write(document.getElementById('report-content').innerHTML);
+        printWindow.document.write(report.content);
         printWindow.document.write('</body></html>');
         printWindow.document.close();
         printWindow.print();
     }
-
+    
     viewReport(id) {
         const report = this.reports.find(r => r.id === parseInt(id));
         if (report) {
             document.getElementById('modal-informe-titulo').textContent = `Informe de ${report.type}`;
             document.getElementById('modal-informe-contenido').innerHTML = report.content;
+            this.currentReport = report; // Almacena el informe actual
             this.openModal();
         }
     }
-
+    
     downloadSpecificReport(id) {
         const report = this.reports.find(r => r.id === parseInt(id));
         if (report) {
@@ -309,22 +337,22 @@ class ReportManager {
             URL.revokeObjectURL(url);
         }
     }
-
+    
     loadMoreReports() {
         // Implement pagination or load more functionality here
         console.log('Load more reports');
     }
-
+    
     openModal() {
         document.getElementById('modal-informe').style.display = 'block';
     }
-
+    
     closeModal() {
         document.getElementById('modal-informe').style.display = 'none';
     }
-}
-
-// Inicialización
-document.addEventListener('DOMContentLoaded', () => {
-    new ReportManager();
-});
+    }
+    
+    // Inicialización
+    document.addEventListener('DOMContentLoaded', () => {
+        new ReportManager();
+    });
