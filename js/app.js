@@ -25,38 +25,23 @@ class InventoryManager {
     }
 
     updateIndexPage() {
-        const totalProductsElement = document.getElementById('total-productos');
-        if (totalProductsElement) totalProductsElement.textContent = this.products.length;
-
-        const valorInventarioElement = document.getElementById('valor-inventario');
-        if (valorInventarioElement) valorInventarioElement.textContent = `$${this.products.reduce((sum, product) => sum + product.totalValue(), 0).toFixed(2)}`;
-
-        const ventasDiaElement = document.getElementById('ventas-dia');
-        if (ventasDiaElement) ventasDiaElement.textContent = `$${this.invoices.reduce((sum, invoice) => sum + invoice.totalPrice, 0).toFixed(2)}`;
+        document.getElementById('total-productos').textContent = this.products.length;
+        document.getElementById('valor-inventario').textContent = `$${this.products.reduce((sum, product) => sum + product.totalValue(), 0).toFixed(2)}`;
+        document.getElementById('ventas-dia').textContent = `$${this.invoices.reduce((sum, invoice) => sum + invoice.totalPrice, 0).toFixed(2)}`;
     }
 
     setupEventListeners() {
         document.getElementById('btn-agregar')?.addEventListener('click', () => this.showAddProductModal());
         document.getElementById('form-producto')?.addEventListener('submit', (e) => this.handleProductSubmit(e));
         document.getElementById('form-venta')?.addEventListener('submit', (e) => this.handleSaleSubmit(e));
-        document.querySelectorAll('.modal-close').forEach(button => {
-            button.addEventListener('click', () => this.closeModal(button.closest('.modal')));
+        document.querySelectorAll('.modal .close').forEach(button => {
+            button.addEventListener('click', () => this.closeModals());
         });
         document.getElementById('buscar-producto')?.addEventListener('input', () => this.filterProducts());
         document.getElementById('filtrar-categoria')?.addEventListener('change', () => this.filterProducts());
         document.getElementById('btn-exportar')?.addEventListener('click', () => this.exportToCSV());
         document.getElementById('btn-importar')?.addEventListener('click', () => this.showImportModal());
         document.getElementById('btn-inventario')?.addEventListener('click', () => this.updateIndexPage());
-
-        document.getElementById('tabla-inventario')?.addEventListener('click', (e) => {
-            if (e.target.classList.contains('edit-btn')) {
-                this.showEditModal(e.target.dataset.id);
-            } else if (e.target.classList.contains('delete-btn')) {
-                this.confirmDelete(e.target.dataset.id);
-            } else if (e.target.classList.contains('sale-btn')) {
-                this.showSaleModal(e.target.dataset.id);
-            }
-        });
     }
 
     addProduct(product) {
@@ -150,6 +135,7 @@ class InventoryManager {
                 </td>
             `;
         });
+        this.attachProductEventListeners();
     }
 
     attachProductEventListeners() {
@@ -218,21 +204,14 @@ class InventoryManager {
 
     updateDashboard() {
         const totalProducts = this.products.length;
-        const totalValue = this.products.reduce((sum, product) => sum + product.totalValue(), 0);
+        const totalValue = this.products.reduce((sum, product) => sum + product.totalValue, 0);
         const lowStockProducts = this.products.filter(product => product.quantity < 10).length;
         const totalCategories = new Set(this.products.map(product => product.category)).size;
     
-        const totalProductsElement = document.getElementById('total-productos');
-        if (totalProductsElement) totalProductsElement.textContent = totalProducts;
-
-        const valorInventarioElement = document.getElementById('valor-inventario');
-        if (valorInventarioElement) valorInventarioElement.textContent = `$${totalValue.toFixed(2)}`;
-
-        const productosBajosElement = document.getElementById('productos-bajos');
-        if (productosBajosElement) productosBajosElement.textContent = lowStockProducts;
-
-        const totalCategoriasElement = document.getElementById('total-categorias');
-        if (totalCategoriasElement) totalCategoriasElement.textContent = totalCategories;
+        document.getElementById('total-productos').textContent = totalProducts;
+        document.getElementById('valor-inventario').textContent = `$${totalValue.toFixed(2)}`;
+        document.getElementById('productos-bajos').textContent = lowStockProducts;
+        document.getElementById('total-categorias').textContent = totalCategories;
     }
 
     filterProducts() {
@@ -324,7 +303,5 @@ class InventoryManager {
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', () => {
-    if (document.querySelector('.inventory-page')) {
-        new InventoryManager();
-    }
+    new InventoryManager();
 });
