@@ -21,8 +21,13 @@ class InventoryManager {
         this.displayProducts();
         this.updateDashboard();
         this.setupEventListeners();
+        this.updateIndexPage(); // Agrega esta línea
     }
-
+    updateIndexPage() {
+        document.getElementById('total-productos').textContent = this.products.length;
+        document.getElementById('valor-inventario').textContent = `$${this.products.reduce((sum, product) => sum + product.totalValue(), 0).toFixed(2)}`;
+        document.getElementById('ventas-dia').textContent = `$${this.invoices.reduce((sum, invoice) => sum + invoice.totalPrice, 0).toFixed(2)}`;
+    }
     setupEventListeners() {
         document.getElementById('btn-agregar')?.addEventListener('click', () => this.showAddProductModal());
         document.getElementById('form-producto')?.addEventListener('submit', (e) => this.handleProductSubmit(e));
