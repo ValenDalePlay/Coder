@@ -23,11 +23,13 @@ class InventoryManager {
         this.setupEventListeners();
         this.updateIndexPage(); // Agrega esta línea
     }
+
     updateIndexPage() {
         document.getElementById('total-productos').textContent = this.products.length;
         document.getElementById('valor-inventario').textContent = `$${this.products.reduce((sum, product) => sum + product.totalValue(), 0).toFixed(2)}`;
         document.getElementById('ventas-dia').textContent = `$${this.invoices.reduce((sum, invoice) => sum + invoice.totalPrice, 0).toFixed(2)}`;
     }
+
     setupEventListeners() {
         document.getElementById('btn-agregar')?.addEventListener('click', () => this.showAddProductModal());
         document.getElementById('form-producto')?.addEventListener('submit', (e) => this.handleProductSubmit(e));
@@ -56,6 +58,7 @@ class InventoryManager {
         this.displayProducts();
         this.updateDashboard();
     }
+
     updateProduct(id, updatedProduct) {
         const index = this.products.findIndex(p => p.id === id);
         if (index !== -1) {
@@ -188,11 +191,12 @@ class InventoryManager {
             modal.classList.add('hidden');
         });
     }
+
     updateIndexPageOnProductChange() {
         this.updateIndexPage();
         this.saveToLocalStorage();
     }
-    
+
     updateIndexPageOnSale() {
         this.updateIndexPage();
         this.saveToLocalStorage();
@@ -203,7 +207,7 @@ class InventoryManager {
         const totalValue = this.products.reduce((sum, product) => sum + product.totalValue(), 0);
         const lowStockProducts = this.products.filter(product => product.quantity < 10).length;
         const totalCategories = new Set(this.products.map(product => product.category)).size;
-    
+
         document.getElementById('total-productos').textContent = totalProducts;
         document.getElementById('valor-inventario').textContent = `$${totalValue.toFixed(2)}`;
         document.getElementById('productos-bajos').textContent = lowStockProducts;
