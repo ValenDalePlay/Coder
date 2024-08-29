@@ -207,7 +207,7 @@ class InventoryManager {
         const totalValue = this.products.reduce((sum, product) => sum + product.totalValue(), 0);
         const lowStockProducts = this.products.filter(product => product.quantity < 10).length;
         const totalCategories = new Set(this.products.map(product => product.category)).size;
-
+    
         document.getElementById('total-productos').textContent = totalProducts;
         document.getElementById('valor-inventario').textContent = `$${totalValue.toFixed(2)}`;
         document.getElementById('productos-bajos').textContent = lowStockProducts;
