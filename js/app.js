@@ -17,17 +17,39 @@ class Product {
 class InventoryManager {
     constructor() {
         this.products = JSON.parse(localStorage.getItem('products')) || [];
+        this.products = this.products.map(p => new Product(p.id, p.name, p.category, p.price, p.quantity, p.description));
         this.invoices = JSON.parse(localStorage.getItem('invoices')) || [];
-        this.displayProducts();
-        this.updateDashboard();
+        this.categories = ['Electrónica', 'Hogar', 'Moda', 'Deportes', 'Libros'];
         this.setupEventListeners();
-        this.updateIndexPage(); // Agrega esta línea
+        this.setupCategories();
+        this.displayProducts();
+        
+        // Solo actualizar el dashboard si estamos en la página de inventario
+        if (document.querySelector('.inventory-page')) {
+            this.updateDashboard();
+        }
+        
+        // Siempre actualizar la página de índice
+        this.updateIndexPage();
     }
-
     updateIndexPage() {
-        document.getElementById('total-productos').textContent = this.products.length;
-        document.getElementById('valor-inventario').textContent = `$${this.products.reduce((sum, product) => sum + product.totalValue(), 0).toFixed(2)}`;
-        document.getElementById('ventas-dia').textContent = `$${this.invoices.reduce((sum, invoice) => sum + invoice.totalPrice, 0).toFixed(2)}`;
+        const updateElement = (id, value) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+            }
+        };
+
+        updateElement('total-productos', this.products.length);
+
+        const totalValue = this.products.reduce((sum, product) => sum + product.totalValue(), 0);
+        updateElement('valor-inventario', `$${totalValue.toFixed(2)}`);
+
+        const today = new Date().toDateString();
+        const ventasHoy = this.invoices
+            .filter(invoice => new Date(invoice.date).toDateString() === today)
+            .reduce((sum, invoice) => sum + invoice.totalPrice, 0);
+        updateElement('ventas-dia', `$${ventasHoy.toFixed(2)}`);
     }
 
     setupEventListeners() {
@@ -204,16 +226,22 @@ class InventoryManager {
 
     updateDashboard() {
         const totalProducts = this.products.length;
-        const totalValue = this.products.reduce((sum, product) => sum + product.totalValue, 0);
+        const totalValue = this.products.reduce((sum, product) => sum + product.totalValue(), 0);
         const lowStockProducts = this.products.filter(product => product.quantity < 10).length;
         const totalCategories = new Set(this.products.map(product => product.category)).size;
     
-        document.getElementById('total-productos').textContent = totalProducts;
-        document.getElementById('valor-inventario').textContent = `$${totalValue.toFixed(2)}`;
-        document.getElementById('productos-bajos').textContent = lowStockProducts;
-        document.getElementById('total-categorias').textContent = totalCategories;
-    }
+        const updateElement = (id, value) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+            }
+        };
 
+        updateElement('total-productos', totalProducts);
+        updateElement('valor-inventario', `$${totalValue.toFixed(2)}`);
+        updateElement('productos-bajos', lowStockProducts);
+        updateElement('total-categorias', totalCategories);
+    }
     filterProducts() {
         const searchTerm = document.getElementById('buscar-producto').value.toLowerCase();
         const category = document.getElementById('filtrar-categoria').value;
@@ -300,6 +328,7 @@ class InventoryManager {
         this.closeModals();
     }
 }
+
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', () => {
