@@ -23,15 +23,68 @@ class InventoryManager {
         this.setupEventListeners();
         this.setupCategories();
         this.displayProducts();
-        
-        // Solo actualizar el dashboard si estamos en la página de inventario
-        if (document.querySelector('.inventory-page')) {
-            this.updateDashboard();
-        }
-        
-        // Siempre actualizar la página de índice
+        this.updateDashboard();
         this.updateIndexPage();
     }
+
+    setupCategories() {
+        const categoryDropdowns = document.querySelectorAll('#producto-categoria, #filtrar-categoria');
+        categoryDropdowns.forEach(dropdown => {
+            if (dropdown) {
+                dropdown.innerHTML = '<option value="">Todas las categorías</option>';
+                this.categories.forEach(category => {
+                    const option = document.createElement('option');
+                    option.value = category.toLowerCase();
+                    option.textContent = category;
+                    dropdown.appendChild(option);
+                });
+            }
+        });
+    }
+
+    setupEventListeners() {
+        document.getElementById('btn-agregar')?.addEventListener('click', () => this.showAddProductModal());
+        document.getElementById('form-producto')?.addEventListener('submit', (e) => this.handleProductSubmit(e));
+        document.getElementById('form-venta')?.addEventListener('submit', (e) => this.handleSaleSubmit(e));
+        document.querySelectorAll('.modal-close').forEach(button => {
+            button.addEventListener('click', () => this.closeModal(button.closest('.modal')));
+        });
+        document.getElementById('buscar-producto')?.addEventListener('input', () => this.filterProducts());
+        document.getElementById('filtrar-categoria')?.addEventListener('change', () => this.filterProducts());
+        document.getElementById('btn-exportar')?.addEventListener('click', () => this.exportToCSV());
+        document.getElementById('btn-importar')?.addEventListener('click', () => this.showImportModal());
+        document.getElementById('btn-inventario')?.addEventListener('click', () => this.updateIndexPage());
+
+        document.getElementById('tabla-inventario')?.addEventListener('click', (e) => {
+            if (e.target.classList.contains('edit-btn')) {
+                this.showEditModal(e.target.dataset.id);
+            } else if (e.target.classList.contains('delete-btn')) {
+                this.confirmDelete(e.target.dataset.id);
+            } else if (e.target.classList.contains('sale-btn')) {
+                this.showSaleModal(e.target.dataset.id);
+            }
+        });
+    }
+
+    updateDashboard() {
+        const updateElement = (id, value) => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.textContent = value;
+            }
+        };
+
+        const totalProducts = this.products.length;
+        const totalValue = this.products.reduce((sum, product) => sum + product.totalValue(), 0);
+        const lowStockProducts = this.products.filter(product => product.quantity < 10).length;
+        const totalCategories = new Set(this.products.map(product => product.category)).size;
+
+        updateElement('total-productos', totalProducts);
+        updateElement('valor-inventario', `$${totalValue.toFixed(2)}`);
+        updateElement('productos-bajos', lowStockProducts);
+        updateElement('total-categorias', totalCategories);
+    }
+
     updateIndexPage() {
         const updateElement = (id, value) => {
             const element = document.getElementById(id);
@@ -50,20 +103,6 @@ class InventoryManager {
             .filter(invoice => new Date(invoice.date).toDateString() === today)
             .reduce((sum, invoice) => sum + invoice.totalPrice, 0);
         updateElement('ventas-dia', `$${ventasHoy.toFixed(2)}`);
-    }
-
-    setupEventListeners() {
-        document.getElementById('btn-agregar')?.addEventListener('click', () => this.showAddProductModal());
-        document.getElementById('form-producto')?.addEventListener('submit', (e) => this.handleProductSubmit(e));
-        document.getElementById('form-venta')?.addEventListener('submit', (e) => this.handleSaleSubmit(e));
-        document.querySelectorAll('.modal .close').forEach(button => {
-            button.addEventListener('click', () => this.closeModals());
-        });
-        document.getElementById('buscar-producto')?.addEventListener('input', () => this.filterProducts());
-        document.getElementById('filtrar-categoria')?.addEventListener('change', () => this.filterProducts());
-        document.getElementById('btn-exportar')?.addEventListener('click', () => this.exportToCSV());
-        document.getElementById('btn-importar')?.addEventListener('click', () => this.showImportModal());
-        document.getElementById('btn-inventario')?.addEventListener('click', () => this.updateIndexPage());
     }
 
     addProduct(product) {
@@ -157,9 +196,7 @@ class InventoryManager {
                 </td>
             `;
         });
-        this.attachProductEventListeners();
     }
-
     attachProductEventListeners() {
         document.querySelectorAll('.edit-btn').forEach(button => {
             button.addEventListener('click', (e) => this.showEditModal(e.target.dataset.id));
