@@ -204,7 +204,7 @@ class InventoryManager {
 
     updateDashboard() {
         const totalProducts = this.products.length;
-        const totalValue = this.products.reduce((sum, product) => sum + product.totalValue(), 0);
+        const totalValue = this.products.reduce((sum, product) => sum + product.totalValue, 0);
         const lowStockProducts = this.products.filter(product => product.quantity < 10).length;
         const totalCategories = new Set(this.products.map(product => product.category)).size;
     
