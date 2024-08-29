@@ -132,8 +132,20 @@
                     </select>
                 </div>
                 <div class="mb-4">
-                    <label for="fecha-inicio" class="block text-gray-700 text-sm font-bold mb-2">Fecha:</label>
+                    <label for="fecha-inicio" class="block text-gray-700 text-sm font-bold mb-2">Fecha de Inicio:</label>
                     <input type="date" id="fecha-inicio" name="fecha_inicio" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                </div>
+                <div class="mb-4">
+                    <label for="fecha-fin" class="block text-gray-700 text-sm font-bold mb-2">Fecha de Fin:</label>
+                    <input type="date" id="fecha-fin" name="fecha_fin" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                </div>
+                <div class="mb-4">
+                    <label for="formato-informe" class="block text-gray-700 text-sm font-bold mb-2">Formato del Informe:</label>
+                    <select id="formato-informe" name="formato" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+                        <option value="pdf">PDF</option>
+                        <option value="excel">Excel</option>
+                        <option value="csv">CSV</option>
+                    </select>
                 </div>
                 <div class="flex items-center justify-between">
                     <button type="submit" id="generate-report-btn" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
@@ -143,42 +155,38 @@
                         Cancelar
                     </button>
                 </div>
-                </form>
-                </section>
-                
-                <section id="report-content" class="bg-white rounded-lg shadow-md p-8 mt-8">
-                    <h2 class="text-2xl font-semibold text-gray-700 mb-6">Contenido del Informe</h2>
-                    <!-- El contenido del informe se insertará aquí dinámicamente -->
-                </section>
-                
-                <div class="mt-8 flex justify-end space-x-4">
-                    <button id="download-report-btn" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
-                        Descargar Informe
-                    </button>
-                    <button id="print-report-btn" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
-                        Imprimir Informe
-                    </button>
-                    <button id="export-csv-btn" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
-                        Exportar a CSV
-                    </button>
-                </div>
-                </main>
-                
-                <!-- Modal para visualizar informe -->
-                <div id="modal-informe" class="modal">
-                    <div class="modal-content">
-                        <span class="modal-close">&times;</span>
-                        <h2 id="modal-informe-titulo" class="text-2xl font-bold mb-4">Detalles del Informe</h2>
-                        <div id="modal-informe-contenido" class="mb-6">
-                            <!-- El contenido del informe se insertará aquí dinámicamente -->
-                        </div>
-                    </div>
-                </div>
+            </form>
+        </section>
+        <section id="report-content" class="bg-white rounded-lg shadow-md p-8 mt-8">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-6">Contenido del Informe</h2>
+            <!-- El contenido del informe se insertará aquí dinámicamente -->
+        </section>
+
+        <div class="mt-8 flex justify-end space-x-4">
+            <button id="download-report-btn" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
+                Descargar Informe
+            </button>
+            <button id="print-report-btn" class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
+                Imprimir Informe
+            </button>
+            <button id="export-csv-btn" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300">
+                Exportar a CSV
+            </button>
+        </div>
+    </main>
+
+    <!-- Modal para visualizar informe -->
+    <div id="modal-informe" class="modal">
+        <div class="modal-content">
+            <span class="modal-close">&times;</span>
+            <h2 id="modal-informe-titulo" class="text-2xl font-bold mb-4">Detalles del Informe</h2>
+            <div id="modal-informe-contenido" class="mb-6">
+                <!-- El contenido del informe se insertará aquí dinámicamente -->
             </div>
         </div>
-                
-        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-        <script src="../js/reports.js"></script>
-    </body>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../js/reports.js"></script>
+</body>
 </html>
-                    
